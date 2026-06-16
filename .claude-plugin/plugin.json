@@ -1,0 +1,14 @@
+{
+  "name": "gbrowse",
+  "version": "1.0.0",
+  "description": "Fast headless+headed browser for QA, dogfooding, and scraping, driven by Claude.",
+  "author": {
+    "name": "gbrowse contributors"
+  },
+  "license": "MIT",
+  "keywords": ["browser", "automation", "playwright", "headless", "scraping", "qa"],
+  "skills": ["./skills"],
+  "engines": {
+    "bun": ">=1.0.0"
+  }
+}

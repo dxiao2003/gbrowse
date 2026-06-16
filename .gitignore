@@ -1,0 +1,5 @@
+node_modules/
+browse/dist/
+.gbrowse/
+*.local
+bun.lockb
