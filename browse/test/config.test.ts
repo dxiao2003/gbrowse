@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'bun:test';
-import { resolveConfig, ensureStateDir, readVersionHash, getGitRoot, getRemoteSlug, resolveGstackHome, resolveChromiumProfile, cleanSingletonLocks } from '../src/config';
+import { resolveConfig, ensureStateDir, readVersionHash, getGitRoot, getRemoteSlug, resolveGbrowseHome, resolveChromiumProfile, cleanSingletonLocks } from '../src/config';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
@@ -136,24 +136,24 @@ describe('config', () => {
 
     test('parses SSH remote URLs', () => {
       // Test the regex directly since we can't mock Bun.spawnSync easily
-      const url = 'git@github.com:garrytan/gstack.git';
+      const url = 'git@github.com:garrytan/gbrowse.git';
       const match = url.match(/[:/]([^/]+)\/([^/]+?)(?:\.git)?$/);
       expect(match).not.toBeNull();
-      expect(`${match![1]}-${match![2]}`).toBe('garrytan-gstack');
+      expect(`${match![1]}-${match![2]}`).toBe('garrytan-gbrowse');
     });
 
     test('parses HTTPS remote URLs', () => {
-      const url = 'https://github.com/garrytan/gstack.git';
+      const url = 'https://github.com/garrytan/gbrowse.git';
       const match = url.match(/[:/]([^/]+)\/([^/]+?)(?:\.git)?$/);
       expect(match).not.toBeNull();
-      expect(`${match![1]}-${match![2]}`).toBe('garrytan-gstack');
+      expect(`${match![1]}-${match![2]}`).toBe('garrytan-gbrowse');
     });
 
     test('parses HTTPS remote URLs without .git suffix', () => {
-      const url = 'https://github.com/garrytan/gstack';
+      const url = 'https://github.com/garrytan/gbrowse';
       const match = url.match(/[:/]([^/]+)\/([^/]+?)(?:\.git)?$/);
       expect(match).not.toBeNull();
-      expect(`${match![1]}-${match![2]}`).toBe('garrytan-gstack');
+      expect(`${match![1]}-${match![2]}`).toBe('garrytan-gbrowse');
     });
   });
 
@@ -315,16 +315,33 @@ describe('startup error log', () => {
   });
 });
 
-describe('resolveGstackHome', () => {
-  test('honors GSTACK_HOME env var when set (back-compat alias)', () => {
-    const origGstack = process.env.GSTACK_HOME;
+describe('resolveGbrowseHome', () => {
+  test('honors GBROWSE_HOME env var when set', () => {
     const origGbrowse = process.env.GBROWSE_HOME;
+    const origGstack = process.env.GSTACK_HOME;
+    const origRoot = process.env.GBROWSE_STATE_ROOT;
+    delete process.env.GSTACK_HOME;
+    delete process.env.GBROWSE_STATE_ROOT;
+    process.env.GBROWSE_HOME = '/tmp/custom-gbrowse-home';
+    try {
+      expect(resolveGbrowseHome()).toBe('/tmp/custom-gbrowse-home');
+    } finally {
+      if (origGbrowse === undefined) delete process.env.GBROWSE_HOME;
+      else process.env.GBROWSE_HOME = origGbrowse;
+      if (origGstack !== undefined) process.env.GSTACK_HOME = origGstack;
+      if (origRoot !== undefined) process.env.GBROWSE_STATE_ROOT = origRoot;
+    }
+  });
+
+  test('honors GSTACK_HOME env var when set (legacy back-compat)', () => {
+    const origGbrowse = process.env.GBROWSE_HOME;
+    const origGstack = process.env.GSTACK_HOME;
     const origRoot = process.env.GBROWSE_STATE_ROOT;
     delete process.env.GBROWSE_HOME;
     delete process.env.GBROWSE_STATE_ROOT;
     process.env.GSTACK_HOME = '/tmp/custom-gstack-home';
     try {
-      expect(resolveGstackHome()).toBe('/tmp/custom-gstack-home');
+      expect(resolveGbrowseHome()).toBe('/tmp/custom-gstack-home');
     } finally {
       if (origGstack === undefined) delete process.env.GSTACK_HOME;
       else process.env.GSTACK_HOME = origGstack;
@@ -334,17 +351,17 @@ describe('resolveGstackHome', () => {
   });
 
   test('falls back to os.homedir() + /.gbrowse when all env unset', () => {
-    const origGstack = process.env.GSTACK_HOME;
     const origGbrowse = process.env.GBROWSE_HOME;
+    const origGstack = process.env.GSTACK_HOME;
     const origRoot = process.env.GBROWSE_STATE_ROOT;
-    delete process.env.GSTACK_HOME;
     delete process.env.GBROWSE_HOME;
+    delete process.env.GSTACK_HOME;
     delete process.env.GBROWSE_STATE_ROOT;
     try {
-      expect(resolveGstackHome()).toBe(path.join(os.homedir(), '.gbrowse'));
+      expect(resolveGbrowseHome()).toBe(path.join(os.homedir(), '.gbrowse'));
     } finally {
-      if (origGstack !== undefined) process.env.GSTACK_HOME = origGstack;
       if (origGbrowse !== undefined) process.env.GBROWSE_HOME = origGbrowse;
+      if (origGstack !== undefined) process.env.GSTACK_HOME = origGstack;
       if (origRoot !== undefined) process.env.GBROWSE_STATE_ROOT = origRoot;
     }
   });
@@ -375,20 +392,20 @@ describe('resolveChromiumProfile', () => {
 
   test('falls back to resolveGbrowseHome()/chromium-profile when nothing set', () => {
     const origEnv = process.env.CHROMIUM_PROFILE;
-    const origGstack = process.env.GSTACK_HOME;
     const origGbrowse = process.env.GBROWSE_HOME;
+    const origGstack = process.env.GSTACK_HOME;
     const origRoot = process.env.GBROWSE_STATE_ROOT;
     delete process.env.CHROMIUM_PROFILE;
-    delete process.env.GBROWSE_HOME;
+    delete process.env.GSTACK_HOME;
     delete process.env.GBROWSE_STATE_ROOT;
-    process.env.GSTACK_HOME = '/tmp/fallback-gstack';
+    process.env.GBROWSE_HOME = '/tmp/fallback-gbrowse';
     try {
-      expect(resolveChromiumProfile()).toBe('/tmp/fallback-gstack/chromium-profile');
+      expect(resolveChromiumProfile()).toBe('/tmp/fallback-gbrowse/chromium-profile');
     } finally {
       if (origEnv !== undefined) process.env.CHROMIUM_PROFILE = origEnv;
-      if (origGstack === undefined) delete process.env.GSTACK_HOME;
-      else process.env.GSTACK_HOME = origGstack;
-      if (origGbrowse !== undefined) process.env.GBROWSE_HOME = origGbrowse;
+      if (origGbrowse === undefined) delete process.env.GBROWSE_HOME;
+      else process.env.GBROWSE_HOME = origGbrowse;
+      if (origGstack !== undefined) process.env.GSTACK_HOME = origGstack;
       if (origRoot !== undefined) process.env.GBROWSE_STATE_ROOT = origRoot;
     }
   });

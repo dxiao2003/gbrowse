@@ -17,7 +17,7 @@ const CLIENT_JS = path.resolve(new URL(import.meta.url).pathname, '..', '..', '.
 describe('terminal-agent WS keepalive (v1.44+)', () => {
   test('1. agent has a KEEPALIVE_INTERVAL_MS env knob, default 25000', () => {
     const src = fs.readFileSync(AGENT_TS, 'utf-8');
-    expect(src).toContain('GSTACK_PTY_KEEPALIVE_INTERVAL_MS');
+    expect(src).toContain('GBROWSE_PTY_KEEPALIVE_INTERVAL_MS');
     expect(src).toMatch(/KEEPALIVE_INTERVAL_MS\s*=\s*parseInt\(/);
     // Default constant present so the env knob has a fallback.
     expect(src).toContain("'25000'");

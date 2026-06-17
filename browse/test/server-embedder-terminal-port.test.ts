@@ -15,15 +15,15 @@ import { resolveConfig } from '../src/config';
 //
 // Embedders (gbrowser phoenix overlay) that run their own PTY server and write
 // terminal-port / terminal-internal-token / terminal-agent-pid themselves were
-// getting those files clobbered by gstack's shutdown(). The flag (default true)
+// getting those files clobbered by gbrowse's shutdown(). The flag (default true)
 // gates four side effects (v1.44+):
 //   1. identity-based kill of the PID in <stateDir>/terminal-agent-pid
 //   2. unlink terminal-port
 //   3. unlink terminal-internal-token
 //   4. unlink terminal-agent-pid
-// False = embedder owns them, gstack stays hands-off.
+// False = embedder owns them, gbrowse stays hands-off.
 //
-// Pre-v1.44 used `pkill -f terminal-agent\.ts` which matched sibling gstack
+// Pre-v1.44 used `pkill -f terminal-agent\.ts` which matched sibling gbrowse
 // sessions on the same host — see browse/src/terminal-agent-control.ts header.
 //
 // CRITICAL: each test stubs process.exit (so shutdown's exit doesn't kill
@@ -126,7 +126,7 @@ function terminationCalls(
 describe('buildFetchHandler ownsTerminalAgent gate', () => {
   // shutdown() reads `path.dirname(config.stateFile)` from module-level config
   // (composition gap — see TODOS T9). So unlinks target the real state dir,
-  // not a per-test temp dir. If a real gstack daemon is running on this host,
+  // not a per-test temp dir. If a real gbrowse daemon is running on this host,
   // its terminal-port + terminal-internal-token + terminal-agent-pid live
   // where this test writes. Save + restore real-daemon file contents around
   // the whole suite so the test never clobbers a developer's running session.

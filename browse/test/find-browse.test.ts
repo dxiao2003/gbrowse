@@ -9,7 +9,7 @@ import { existsSync } from 'fs';
 describe('locateBinary', () => {
   test('returns null when no binary exists at known paths', () => {
     // This test depends on the test environment — if a real binary exists at
-    // ~/.claude/skills/gstack/browse/dist/browse, it will find it.
+    // ~/.claude/skills/gbrowse/browse/dist/browse, it will find it.
     // We mainly test that the function doesn't throw.
     const result = locateBinary();
     expect(result === null || typeof result === 'string').toBe(true);
@@ -50,7 +50,7 @@ describe('locateBinary', () => {
 
   test('source-checkout fallback resolves <git-root>/browse/dist/browse[.exe]', () => {
     // The windows-setup-e2e.yml workflow builds binaries directly under
-    // browse/dist/ (no .claude/skills/gstack/ install layout). find-browse
+    // browse/dist/ (no .claude/skills/gbrowse/ install layout). find-browse
     // must resolve those — otherwise every fresh build that hasn't run
     // ./setup yet looks broken. Static pin so a future refactor that
     // drops the source-checkout branch trips this test.

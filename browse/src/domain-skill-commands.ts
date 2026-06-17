@@ -17,7 +17,7 @@
  *     from the compiled binary, unlike the L4 ML classifier). The full L4
  *     scan happens in sidebar-agent.ts when the skill is loaded into a prompt.
  *   - Output is structured: every success/error includes problem + cause +
- *     suggested-action. Matches the gstack house style.
+ *     suggested-action. Matches the gbrowse house style.
  *
  * The body for `save` is supplied via stdin or --from-file, NOT inline argv,
  * so multi-line markdown bodies don't get mangled by shell quoting.
@@ -188,7 +188,7 @@ async function handleEdit(args: string[]): Promise<string> {
     );
   }
   const editor = process.env.EDITOR || 'vi';
-  const tmpFile = path.join(os.tmpdir(), `gstack-domain-skill-${process.pid}-${Date.now()}.md`);
+  const tmpFile = path.join(os.tmpdir(), `gbrowse-domain-skill-${process.pid}-${Date.now()}.md`);
   await fs.writeFile(tmpFile, current.body, 'utf8');
   const result = spawnSync(editor, [tmpFile], { stdio: 'inherit' });
   if (result.status !== 0) {

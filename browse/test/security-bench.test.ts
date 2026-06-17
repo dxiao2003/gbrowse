@@ -13,11 +13,11 @@
  * threshold regresses. Skipped gracefully if the model cache is absent
  * (first-run CI) — prime via the sidebar-agent warmup.
  *
- * Dataset cache: ~/.gstack/cache/browsesafe-bench-smoke/test-rows.json
+ * Dataset cache: ~/.gbrowse/cache/browsesafe-bench-smoke/test-rows.json
  * (hermetic after first run — no HF network traffic on subsequent CI).
  *
  * Run: bun test browse/test/security-bench.test.ts
- * Run with fresh sample: rm -rf ~/.gstack/cache/browsesafe-bench-smoke/ && bun test ...
+ * Run with fresh sample: rm -rf ~/.gbrowse/cache/browsesafe-bench-smoke/ && bun test ...
  */
 
 import { describe, test, expect, beforeAll } from 'bun:test';

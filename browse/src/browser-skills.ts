@@ -108,8 +108,8 @@ function detectProjectRoot(): string | null {
 }
 
 function detectBundledRoot(): string {
-  // The browse binary lives at <gstack-install>/browse/dist/browse.
-  // The bundled browser-skills/ dir is a sibling of browse/ (i.e. <gstack-install>/browser-skills/).
+  // The browse binary lives at <gbrowse-install>/browse/dist/browse.
+  // The bundled browser-skills/ dir is a sibling of browse/ (i.e. <gbrowse-install>/browser-skills/).
   // For dev/source runs, process.execPath is bun itself — fall back to the source-tree
   // directory two levels up from this file.
   try {
@@ -119,7 +119,7 @@ function detectBundledRoot(): string {
     }
   } catch {}
   // Source/dev fallback: walk up from this file's dir to a directory that has both browse/ and browser-skills/.
-  // browse/src/browser-skills.ts → ../../  (the gstack root).
+  // browse/src/browser-skills.ts → ../../  (the gbrowse root).
   return path.resolve(__dirname, '..', '..');
 }
 
@@ -397,9 +397,9 @@ export function readBrowserSkill(name: string, tiers?: TierPaths): BrowserSkill 
  * Move a user-tier skill (project or global) into the tier's .tombstones/
  * directory. Returns the new path.
  *
- * Cannot tombstone bundled skills — they ship with gstack and are read-only.
+ * Cannot tombstone bundled skills — they ship with gbrowse and are read-only.
  * To remove a bundled skill, override it with a global/project entry, or
- * remove the file from the gstack source tree.
+ * remove the file from the gbrowse source tree.
  */
 export function tombstoneBrowserSkill(name: string, tier: 'project' | 'global', tiers?: TierPaths): string {
   const t = tiers ?? defaultTierPaths();

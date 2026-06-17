@@ -4,7 +4,7 @@
  *
  * Why this exists: pre-v1.44 used `pkill -f terminal-agent\.ts`, which
  * matches any process whose argv contains the string and would kill
- * sibling gstack sessions on the same host. The agent now writes a
+ * sibling gbrowse sessions on the same host. The agent now writes a
  * structured `terminal-agent-pid` record (`{pid, gen, startedAt}`) and
  * every kill site routes through `killAgentByRecord` here — identity-based,
  * no regex.

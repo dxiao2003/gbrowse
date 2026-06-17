@@ -17,9 +17,9 @@ import {
 // by argv regex — any process whose command line contains the string
 // `terminal-agent.ts` got SIGTERM'd. In practice this killed:
 //
-//   * sibling gstack sessions on the same host
+//   * sibling gbrowse sessions on the same host
 //   * editor processes (vim, code, less) that had the file open
-//   * any second gstack run on the host
+//   * any second gbrowse run on the host
 //
 // The v1.44 migration replaces both kill sites with identity-based PID kill
 // against the record written at `<stateDir>/terminal-agent-pid` by the
@@ -78,7 +78,7 @@ describe('terminal-agent PID identity (v1.44+)', () => {
   });
 
   test('3. readAgentRecord round-trips writeAgentRecord', () => {
-    const tmpDir = fs.mkdtempSync(path.join(require('os').tmpdir(), 'gstack-pid-id-'));
+    const tmpDir = fs.mkdtempSync(path.join(require('os').tmpdir(), 'gbrowse-pid-id-'));
     try {
       const record: AgentRecord = {
         pid: 12345,
@@ -99,7 +99,7 @@ describe('terminal-agent PID identity (v1.44+)', () => {
   });
 
   test('4. readAgentRecord returns null on missing or malformed file', () => {
-    const tmpDir = fs.mkdtempSync(path.join(require('os').tmpdir(), 'gstack-pid-id-'));
+    const tmpDir = fs.mkdtempSync(path.join(require('os').tmpdir(), 'gbrowse-pid-id-'));
     try {
       // Missing.
       expect(readAgentRecord(tmpDir)).toBeNull();

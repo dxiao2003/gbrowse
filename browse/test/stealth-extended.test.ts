@@ -4,7 +4,7 @@
  *
  * Pins:
  * 1. Default mode keeps minimum: only WEBDRIVER_MASK_SCRIPT applied.
- * 2. GSTACK_STEALTH=extended adds EXTENDED_STEALTH_SCRIPT on top.
+ * 2. GBROWSE_STEALTH=extended adds EXTENDED_STEALTH_SCRIPT on top.
  * 3. EXTENDED_STEALTH_SCRIPT contains the six detection-vector patches.
  * 4. Apply order: default mask first, extended second (so the
  *    delete-from-prototype path layers on top of the getter without
@@ -26,32 +26,32 @@ import {
 let originalEnv: string | undefined;
 
 beforeEach(() => {
-  originalEnv = process.env.GSTACK_STEALTH;
+  originalEnv = process.env.GBROWSE_STEALTH;
 });
 
 afterEach(() => {
-  if (originalEnv === undefined) delete process.env.GSTACK_STEALTH;
-  else process.env.GSTACK_STEALTH = originalEnv;
+  if (originalEnv === undefined) delete process.env.GBROWSE_STEALTH;
+  else process.env.GBROWSE_STEALTH = originalEnv;
 });
 
 describe('extended stealth — opt-in mode flag', () => {
   test('default mode is OFF (consistency-first contract)', () => {
-    delete process.env.GSTACK_STEALTH;
+    delete process.env.GBROWSE_STEALTH;
     expect(isExtendedStealthEnabled()).toBe(false);
   });
 
-  test('GSTACK_STEALTH=extended enables extended mode', () => {
-    process.env.GSTACK_STEALTH = 'extended';
+  test('GBROWSE_STEALTH=extended enables extended mode', () => {
+    process.env.GBROWSE_STEALTH = 'extended';
     expect(isExtendedStealthEnabled()).toBe(true);
   });
 
-  test('GSTACK_STEALTH=1 also enables (env-style boolean)', () => {
-    process.env.GSTACK_STEALTH = '1';
+  test('GBROWSE_STEALTH=1 also enables (env-style boolean)', () => {
+    process.env.GBROWSE_STEALTH = '1';
     expect(isExtendedStealthEnabled()).toBe(true);
   });
 
-  test('GSTACK_STEALTH=anything-else does NOT enable', () => {
-    process.env.GSTACK_STEALTH = 'verbose';
+  test('GBROWSE_STEALTH=anything-else does NOT enable', () => {
+    process.env.GBROWSE_STEALTH = 'verbose';
     expect(isExtendedStealthEnabled()).toBe(false);
   });
 });
@@ -90,7 +90,7 @@ describe('EXTENDED_STEALTH_SCRIPT — six detection-vector patches', () => {
 
 describe('applyStealth — script wiring', () => {
   test('default mode applies ONLY WEBDRIVER_MASK_SCRIPT', async () => {
-    delete process.env.GSTACK_STEALTH;
+    delete process.env.GBROWSE_STEALTH;
     const calls: string[] = [];
     const fakeCtx = {
       addInitScript: async (opts: { content: string }) => {
@@ -103,7 +103,7 @@ describe('applyStealth — script wiring', () => {
   });
 
   test('extended mode applies BOTH scripts in order (mask first, extended second)', async () => {
-    process.env.GSTACK_STEALTH = 'extended';
+    process.env.GBROWSE_STEALTH = 'extended';
     const calls: string[] = [];
     const fakeCtx = {
       addInitScript: async (opts: { content: string }) => {
