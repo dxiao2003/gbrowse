@@ -70,7 +70,7 @@ cd gbrowse
 ./scripts/install.sh
 ```
 
-`install.sh` runs `bun install`, `bunx playwright install chromium`, and
+`install.sh` runs `bun install`, `bun x playwright install chromium`, and
 `bun run vendor:xterm` (copies xterm into the extension).
 
 ## Usage
@@ -113,6 +113,31 @@ bun run vendor:xterm   # re-vendor xterm assets into extension/lib/
 On-disk state (Chromium profile with cookies/logins, downloaded ML models, security
 learnings) lives in `~/.gbrowse/`, kept out of any working tree. Set `CHROMIUM_PROFILE`
 to isolate the profile per workspace.
+
+### Building an executable
+
+By default gbrowse runs from source via Bun (`bun run browse/src/cli.ts`). You can
+optionally compile a self-contained binary:
+
+```bash
+bun run build        # or: ./scripts/build.sh
+```
+
+This produces `browse/dist/browse`. The skills automatically prefer this binary when it
+exists and fall back to `bun run` otherwise — so building it is purely an opt-in
+optimization, not a requirement.
+
+**When to build one:**
+- You want faster CLI startup (no per-invocation Bun/TypeScript load).
+- You're packaging gbrowse for a machine where invoking `bun run` on the source each
+  time is undesirable.
+
+**Caveats:**
+- Run `scripts/install.sh` first — the build needs Bun and `node_modules`.
+- The binary is **not fully standalone**: at runtime it still needs `node_modules/playwright`
+  and an installed Chromium (so keep the repo's `node_modules` alongside it).
+- The build is gitignored (`browse/dist/`) and stamped with the current commit hash in
+  `browse/dist/.version`. Rebuild after pulling changes.
 
 ### Testing
 
