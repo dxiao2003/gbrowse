@@ -11,7 +11,7 @@ cd "$ROOT"
 bun install
 
 echo "gbrowse: installing Chromium (this may take a few minutes)..."
-bunx playwright install chromium
+bun x playwright install chromium
 
 echo "gbrowse: vendoring xterm for the browser extension..."
 if [ -f "$ROOT/package.json" ] && grep -q '"vendor:xterm"' "$ROOT/package.json"; then
