@@ -142,11 +142,21 @@ optimization, not a requirement.
 ### Testing
 
 ```bash
-bun test browse/test/
+bun run test          # runs under xvfb-run when no display is present
 ```
 
-Run `scripts/install.sh` first — some tests require Playwright/Chromium. A subset of
-tests touch live network or the ML model and may be gated or skipped accordingly.
+Run `scripts/install.sh` first — some tests require Playwright/Chromium. The headed
+browser and extension tests need an X display: `bun run test` (via `scripts/test.sh`)
+auto-wraps the run in `xvfb-run` when `$DISPLAY` is unset, so on a headless Linux box
+install Xvfb once:
+
+```bash
+sudo apt-get install -y xvfb x11-utils
+```
+
+To bypass the wrapper (e.g. you already have a display, or on macOS), use
+`bun run test:direct`. A subset of tests touch live network or the ML model and may be
+gated or skipped accordingly.
 
 ## License
 

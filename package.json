@@ -8,7 +8,8 @@
     "dev": "bun run browse/src/cli.ts",
     "server": "bun run browse/src/server.ts",
     "build": "bash scripts/build.sh",
-    "test": "bun test browse/test/",
+    "test": "bash scripts/test.sh",
+    "test:direct": "bun test browse/test/",
     "vendor:xterm": "mkdir -p extension/lib && cp node_modules/xterm/lib/xterm.js extension/lib/xterm.js && cp node_modules/xterm/css/xterm.css extension/lib/xterm.css && cp node_modules/xterm-addon-fit/lib/xterm-addon-fit.js extension/lib/xterm-addon-fit.js"
   },
   "dependencies": {
