@@ -20,13 +20,12 @@ describe('Adversarial security', () => {
     expect(source).toContain('escapeHtml(entry.command');
   });
 
-  test('freeze hook uses trailing slash in boundary check', () => {
+  test.skip('freeze hook uses trailing slash in boundary check', () => {
+    // freeze/ is a gstack-only feature not present in gbrowse
     const source = fs.readFileSync(
       path.join(import.meta.dir, '../../freeze/bin/check-freeze.sh'),
       'utf-8',
     );
-    // The boundary check must use "${FREEZE_DIR}/" with a trailing slash
-    // to prevent prefix collision (e.g., /app matching /application)
     expect(source).toContain('"${FREEZE_DIR}/"');
   });
 });

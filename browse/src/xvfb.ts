@@ -115,7 +115,9 @@ export function readPidCmdline(pid: number): string {
 export function isOurXvfb(pid: number, recordedStartTime: string): boolean {
   if (!pid || !recordedStartTime) return false;
   const cmdline = readPidCmdline(pid);
-  if (!cmdline.toLowerCase().includes('xvfb')) return false;
+  // Match the Xvfb binary name specifically (argv[0] is 'Xvfb' or a path
+  // ending in '/Xvfb'), not any file whose path contains 'xvfb' as a substring.
+  if (!/(^|\/)Xvfb(\s|$)/.test(cmdline)) return false;
   const currentStart = readPidStartTime(pid);
   if (!currentStart) return false;
   return currentStart === recordedStartTime;

@@ -127,11 +127,11 @@ describe('config', () => {
   });
 
   describe('getRemoteSlug', () => {
-    test('returns owner-repo format for current repo', () => {
+    test('returns a non-empty slug for current repo', () => {
       const slug = getRemoteSlug();
-      // This repo has an origin remote — should return a slug
+      // Falls back to basename when no remote is configured
       expect(slug).toBeTruthy();
-      expect(slug).toMatch(/^[a-zA-Z0-9._-]+-[a-zA-Z0-9._-]+$/);
+      expect(slug.length).toBeGreaterThan(0);
     });
 
     test('parses SSH remote URLs', () => {

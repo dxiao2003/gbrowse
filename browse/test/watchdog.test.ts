@@ -137,7 +137,8 @@ describe('parent-process watchdog (v0.18.1.0)', () => {
     const parentPid = parentProc.pid!;
 
     // Default headless: no BROWSE_HEADED, real parent PID — watchdog active.
-    serverProc = spawnServer({ BROWSE_PARENT_PID: String(parentPid) }, 34903);
+    // BROWSE_HEADLESS_SKIP=1 skips Chromium launch (Chromium may not be installed).
+    serverProc = spawnServer({ BROWSE_PARENT_PID: String(parentPid), BROWSE_HEADLESS_SKIP: '1' }, 34903);
     const serverPid = serverProc.pid!;
 
     // Give the server a moment to start and register the watchdog interval.

@@ -48,13 +48,17 @@ async function ensureDir(): Promise<void> {
 let telemetryDisabled: boolean | null = null;
 function isDisabled(): boolean {
   if (telemetryDisabled !== null) return telemetryDisabled;
-  // Check kill-switch env vars.
+  // Explicit opt-in: GBROWSE_TELEMETRY_OFF=0 or GSTACK_TELEMETRY_OFF=0 enables logging.
+  if (process.env.GBROWSE_TELEMETRY_OFF === '0' || process.env.GSTACK_TELEMETRY_OFF === '0') {
+    telemetryDisabled = false;
+    return false;
+  }
+  // Kill switch.
   if (process.env.GBROWSE_TELEMETRY_OFF === '1' || process.env.GSTACK_TELEMETRY_OFF === '1') {
     telemetryDisabled = true;
     return true;
   }
   // Default OFF — no skill preamble to configure it.
-  // Set GBROWSE_TELEMETRY_OFF=0 to enable local analytics logging.
   telemetryDisabled = true;
   return true;
 }
