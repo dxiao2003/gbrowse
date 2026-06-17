@@ -49,7 +49,7 @@ The plugin ships four skills:
 From within Claude Code, add this repo as a plugin marketplace and install it:
 
 ```
-/plugin marketplace add /path/to/gbrowse      # or a git URL once published
+/plugin marketplace add dxiao2003/gbrowse
 /plugin install gbrowse
 ```
 
@@ -59,7 +59,7 @@ one-line nudge if dependencies are missing. Just start using the `browse`
 skill and let it self-heal on first use. Alternatively you can manually install
 Playwright/Chromium by invoking
 ```
-/path/to/gbrowse/install.sh
+/path/to/gbrowse/scripts/install.sh
 ```
 
 ### Standalone (without the plugin system)
