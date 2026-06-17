@@ -30,5 +30,9 @@
   "engines": {
     "bun": ">=1.0.0"
   },
-  "keywords": ["browser", "automation", "playwright", "headless", "scraping", "qa"]
+  "keywords": ["browser", "automation", "playwright", "headless", "scraping", "qa"],
+  "trustedDependencies": [
+    "onnxruntime-node",
+    "protobufjs"
+  ]
 }
