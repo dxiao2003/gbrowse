@@ -38,18 +38,49 @@ fi
 # No args → one process per file for isolation.
 fail=0
 failed_files=()
+files_total=0
+files_passed=0
+tests_pass=0
+tests_fail=0
+tests_skip=0
+SECONDS=0
+tmp="$(mktemp)"
+trap 'rm -f "$tmp"' EXIT
+
 for f in browse/test/*.test.ts; do
-  if ! bun test "$f"; then
+  files_total=$((files_total + 1))
+  # Stream output live (tee) while capturing it to tally per-file counts.
+  bun test "$f" 2>&1 | tee "$tmp"
+  rc=${PIPESTATUS[0]}
+
+  # bun prints one summary block per file: " N pass" / " N fail" / " N skip".
+  p=$(grep -oE '^ *[0-9]+ pass' "$tmp" | grep -oE '[0-9]+' | tail -1)
+  x=$(grep -oE '^ *[0-9]+ fail' "$tmp" | grep -oE '[0-9]+' | tail -1)
+  s=$(grep -oE '^ *[0-9]+ skip' "$tmp" | grep -oE '[0-9]+' | tail -1)
+  tests_pass=$((tests_pass + ${p:-0}))
+  tests_fail=$((tests_fail + ${x:-0}))
+  tests_skip=$((tests_skip + ${s:-0}))
+
+  if [ "$rc" -eq 0 ]; then
+    files_passed=$((files_passed + 1))
+  else
     fail=1
     failed_files+=("$f")
   fi
 done
 
+tests_total=$((tests_pass + tests_fail + tests_skip))
 echo ""
+echo "════════════════════════ gbrowse test summary ════════════════════════"
+printf '  Files:  %d passed, %d failed  (%d total)\n' \
+  "$files_passed" "$((files_total - files_passed))" "$files_total"
+printf '  Tests:  %d passed, %d failed, %d skipped  (%d total)\n' \
+  "$tests_pass" "$tests_fail" "$tests_skip" "$tests_total"
+printf '  Time:   %dm%02ds\n' "$((SECONDS / 60))" "$((SECONDS % 60))"
 if [ "$fail" -ne 0 ]; then
-  echo "[gbrowse] FAILED files (${#failed_files[@]}):" >&2
-  printf '  %s\n' "${failed_files[@]}" >&2
-else
-  echo "[gbrowse] All test files passed."
+  echo "  ----------------------------------------------------------------"
+  echo "  FAILED files (${#failed_files[@]}):"
+  printf '    %s\n' "${failed_files[@]}"
 fi
+echo "═══════════════════════════════════════════════════════════════════════"
 exit "$fail"
