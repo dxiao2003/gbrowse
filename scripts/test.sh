@@ -40,26 +40,32 @@ fail=0
 failed_files=()
 files_total=0
 files_passed=0
-tests_pass=0
+tests_total=0
 tests_fail=0
 tests_skip=0
 SECONDS=0
-tmp="$(mktemp)"
-trap 'rm -f "$tmp"' EXIT
+xml="$(mktemp)"
+trap 'rm -f "$xml"' EXIT
+
+# Read an integer attribute off the JUnit <testsuites> root element, default 0.
+# Counts come from the machine-readable XML, not bun's console text, so a change
+# to bun's pretty-printed output can't skew the totals.
+xml_attr() {
+  local v
+  v=$(grep -oE "<testsuites[^>]*>" "$xml" 2>/dev/null \
+        | grep -oE " $1=\"[0-9]+\"" | grep -oE '[0-9]+' | head -1)
+  echo "${v:-0}"
+}
 
 for f in browse/test/*.test.ts; do
   files_total=$((files_total + 1))
-  # Stream output live (tee) while capturing it to tally per-file counts.
-  bun test "$f" 2>&1 | tee "$tmp"
-  rc=${PIPESTATUS[0]}
+  # bun still prints its normal console summary AND writes JUnit XML to the file.
+  bun test "$f" --reporter=junit --reporter-outfile="$xml"
+  rc=$?
 
-  # bun prints one summary block per file: " N pass" / " N fail" / " N skip".
-  p=$(grep -oE '^ *[0-9]+ pass' "$tmp" | grep -oE '[0-9]+' | tail -1)
-  x=$(grep -oE '^ *[0-9]+ fail' "$tmp" | grep -oE '[0-9]+' | tail -1)
-  s=$(grep -oE '^ *[0-9]+ skip' "$tmp" | grep -oE '[0-9]+' | tail -1)
-  tests_pass=$((tests_pass + ${p:-0}))
-  tests_fail=$((tests_fail + ${x:-0}))
-  tests_skip=$((tests_skip + ${s:-0}))
+  tests_total=$((tests_total + $(xml_attr tests)))
+  tests_fail=$((tests_fail + $(xml_attr failures) + $(xml_attr errors)))
+  tests_skip=$((tests_skip + $(xml_attr skipped)))
 
   if [ "$rc" -eq 0 ]; then
     files_passed=$((files_passed + 1))
@@ -69,7 +75,7 @@ for f in browse/test/*.test.ts; do
   fi
 done
 
-tests_total=$((tests_pass + tests_fail + tests_skip))
+tests_pass=$((tests_total - tests_fail - tests_skip))
 echo ""
 echo "════════════════════════ gbrowse test summary ════════════════════════"
 printf '  Files:  %d passed, %d failed  (%d total)\n' \
