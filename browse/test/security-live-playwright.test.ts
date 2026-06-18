@@ -58,7 +58,6 @@ describe('defense-in-depth — live Playwright fixture', () => {
 
   afterAll(() => {
     try { testServer.server.stop(); } catch {}
-    setTimeout(() => process.exit(0), 500);
   });
 
   test('L2 — content-security.ts hidden-element stripper detects the .sneaky div', async () => {

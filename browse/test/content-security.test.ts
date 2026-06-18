@@ -424,7 +424,6 @@ describe('Hidden element stripping', () => {
 
   afterAll(() => {
     try { testServer.server.stop(); } catch {}
-    setTimeout(() => process.exit(0), 500);
   });
 
   test('detects CSS-hidden elements on injection-hidden page', async () => {
