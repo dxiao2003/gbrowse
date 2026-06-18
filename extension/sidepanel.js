@@ -1227,16 +1227,18 @@ portInput.addEventListener('keydown', (e) => {
 
 // ─── Reconnect / Copy Buttons ────────────────────────────────────
 
+const OPEN_BROWSER_COMMAND = '/open-browser';
+
 document.getElementById('conn-reconnect').addEventListener('click', () => {
   reconnectAttempts = 0;
   startReconnect();
 });
 
 document.getElementById('conn-copy').addEventListener('click', () => {
-  navigator.clipboard.writeText('/open-gbrowse-browser').then(() => {
+  navigator.clipboard.writeText(OPEN_BROWSER_COMMAND).then(() => {
     const btn = document.getElementById('conn-copy');
     btn.textContent = 'copied!';
-    setTimeout(() => { btn.textContent = '/open-gbrowse-browser'; }, 2000);
+    setTimeout(() => { btn.textContent = OPEN_BROWSER_COMMAND; }, 2000);
   });
 });
 
@@ -1328,7 +1330,7 @@ async function tryConnect() {
   } catch (e) {
     setLoadingStatus(
       `Server not reachable on port ${port} (attempt ${connectAttempts})`,
-      `GET /health failed: ${e.message}\n\nThe browse server may still be starting.\nRun /open-gbrowse-browser in Claude Code.`
+      `GET /health failed: ${e.message}\n\nThe browse server may still be starting.\nRun ${OPEN_BROWSER_COMMAND} in Claude Code.`
     );
   }
 
