@@ -148,7 +148,12 @@ describe('lease lifecycle interplay (via pty-session-lease)', () => {
     const vb = validateLease(b.sessionId);
     expect(va.ok && vb.ok).toBe(true);
     if (va.ok && vb.ok) {
-      expect(va.expiresAt).toBe(vb.expiresAt);
+      // Both leases share the same TTL policy, so they expire within a few ms
+      // of each other (minted back-to-back). Exact equality is racy: the two
+      // mintLease() calls can straddle a millisecond boundary, making the
+      // expiresAt values differ by 1ms. The TTL is 30 min, so a generous
+      // tolerance still distinguishes "same policy" from a real divergence.
+      expect(Math.abs(va.expiresAt - vb.expiresAt)).toBeLessThan(1000);
     }
   });
 });

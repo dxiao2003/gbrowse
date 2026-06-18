@@ -1,6 +1,6 @@
 /**
  * browse-client — canonical SDK that browser-skill scripts import to drive the
- * gstack daemon over loopback HTTP.
+ * gbrowse daemon over loopback HTTP.
  *
  * Distribution model:
  *   This file is the canonical source. Each browser-skill ships a sibling
@@ -15,7 +15,7 @@
  *   against), no npm publish workflow, no fixed-path tilde imports.
  *
  * Auth resolution:
- *   1. GSTACK_PORT + GSTACK_SKILL_TOKEN env vars (set by `$B skill run` when
+ *   1. GBROWSE_PORT + GBROWSE_SKILL_TOKEN env vars (set by `$B skill run` when
  *      spawning the script). The token is a per-spawn scoped capability bound
  *      to read+write commands; it expires when the spawn ends.
  *   2. State file fallback: read `BROWSE_STATE_FILE` env or `<git-root>/.gbrowse/browse.json`
@@ -36,9 +36,9 @@ import * as path from 'path';
 import * as cp from 'child_process';
 
 export interface BrowseClientOptions {
-  /** Override port. Default: GSTACK_PORT env or state file. */
+  /** Override port. Default: GBROWSE_PORT env or state file. */
   port?: number;
-  /** Override token. Default: GSTACK_SKILL_TOKEN env, then state file root token. */
+  /** Override token. Default: GBROWSE_SKILL_TOKEN env, then state file root token. */
   token?: string;
   /** Tab id to target (every command can scope to a tab). Default: BROWSE_TAB env or undefined (active tab). */
   tabId?: number;
@@ -68,8 +68,8 @@ export function resolveBrowseAuth(opts: BrowseClientOptions = {}): ResolvedAuth 
   }
 
   // 1. Env vars (set by $B skill run when spawning).
-  const envPort = process.env.GSTACK_PORT;
-  const envToken = process.env.GSTACK_SKILL_TOKEN;
+  const envPort = (process.env.GBROWSE_PORT ?? process.env.GSTACK_PORT);
+  const envToken = (process.env.GBROWSE_SKILL_TOKEN ?? process.env.GSTACK_SKILL_TOKEN);
   if (envPort && envToken) {
     const port = opts.port ?? parseIntegerEnvValue(envPort);
     if (port !== undefined) {
@@ -96,7 +96,7 @@ export function resolveBrowseAuth(opts: BrowseClientOptions = {}): ResolvedAuth 
 
   throw new Error(
     'browse-client: cannot find daemon port + token. Either spawn via `$B skill run` ' +
-    '(sets GSTACK_PORT + GSTACK_SKILL_TOKEN) or run from a project with a live daemon ' +
+    '(sets GBROWSE_PORT + GBROWSE_SKILL_TOKEN) or run from a project with a live daemon ' +
     '(.gbrowse/browse.json must exist).'
   );
 }

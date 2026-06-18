@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GStack Browser</title>
+<title>GBrowse Browser</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link href="https://api.fontshare.com/v2/css?f[]=satoshi@700,900&display=swap" rel="stylesheet">
 <style>
@@ -149,7 +149,6 @@
   .try-item .hl { color: #e4e4e7; font-weight: 500; }
 
   /* Footer */
-  .footer {}
   .footer p { font-size: 12px; color: var(--zinc-600); }
   .footer a { color: var(--zinc-400); text-decoration: none; }
   .footer a:hover { color: var(--amber-400); }
@@ -167,7 +166,7 @@
 <body>
 
 <div class="sidebar-prompt" id="sidebar-prompt">
-  <div class="bubble">Open the sidebar to get started. Click the puzzle piece icon in the toolbar, then pin gstack browse.</div>
+  <div class="bubble">Open the sidebar to get started. Click the puzzle piece icon in the toolbar, then pin gbrowse browse.</div>
   <span class="arrow-right">&#x2192;</span>
 </div>
 
@@ -175,7 +174,7 @@
   <header class="hero">
     <div class="logo-row">
       <div class="logo-dot"></div>
-      <span class="logo-text">GStack Browser</span>
+      <span class="logo-text">GBrowse Browser</span>
     </div>
     <p class="tagline">This browser is connected to your Claude Code session. The sidebar is your co-pilot: it can control this window, read pages, edit CSS, and pass everything back to your terminal.</p>
   </header>
@@ -217,18 +216,14 @@
       <div class="try-item">From your Claude Code terminal: <span class="hl">"Navigate to my app, extract the full CSS design system, and write it to DESIGN.md"</span></div>
     </div>
   </div>
-
-  <footer class="footer">
-    <p><a href="https://github.com/garrytan/gstack">gstack</a> is open source. Built by <a href="https://x.com/garrytan">Garry Tan</a>.</p>
-  </footer>
 </div>
 
 <script>
 // Hide sidebar prompt ONLY when the sidebar is actually opened.
-// The content script dispatches 'gstack-extension-ready' when it receives
+// The content script dispatches 'gbrowse-extension-ready' when it receives
 // a 'sidebarOpened' message from the side panel (via background.js).
 // This means the arrow stays visible until the user actually opens the sidebar.
-document.addEventListener('gstack-extension-ready', () => {
+document.addEventListener('gbrowse-extension-ready', () => {
   const prompt = document.getElementById('sidebar-prompt');
   if (prompt) prompt.classList.add('hidden');
 });

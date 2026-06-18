@@ -33,7 +33,6 @@ beforeAll(async () => {
 
 afterAll(() => {
   try { testServer.server.stop(); } catch {}
-  setTimeout(() => process.exit(0), 500);
 });
 
 // ─── Snapshot Output ────────────────────────────────────────────

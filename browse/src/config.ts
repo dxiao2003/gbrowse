@@ -172,11 +172,6 @@ export function resolveGbrowseHome(): string {
   );
 }
 
-/** @deprecated use resolveGbrowseHome() */
-export function resolveGstackHome(): string {
-  return resolveGbrowseHome();
-}
-
 /**
  * Resolve the Chromium profile directory.
  *

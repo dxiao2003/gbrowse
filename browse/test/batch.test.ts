@@ -44,7 +44,6 @@ beforeAll(async () => {
 
 afterAll(() => {
   try { testServer.server.stop(); } catch {}
-  setTimeout(() => process.exit(0), 500);
 });
 
 // We need a running browse server for HTTP tests.

@@ -77,9 +77,9 @@ describe('welcome page served via HTTP', () => {
 
   // ─── Branding ─────────────────────────────────────────────────────
 
-  test('has GStack Browser title and branding', () => {
-    expect(html).toContain('<title>GStack Browser</title>');
-    expect(html).toContain('GStack Browser');
+  test('has GBrowse Browser title and branding', () => {
+    expect(html).toContain('<title>GBrowse Browser</title>');
+    expect(html).toContain('GBrowse Browser');
   });
 
   test('has amber dot logo', () => {
@@ -109,7 +109,7 @@ describe('welcome page served via HTTP', () => {
 
   test('hides sidebar prompt when extension is detected', () => {
     // Should listen for the extension-ready event
-    expect(html).toContain("'gstack-extension-ready'");
+    expect(html).toContain("'gbrowse-extension-ready'");
     // Should add 'hidden' class to sidebar-prompt
     expect(html).toContain("classList.add('hidden')");
   });
@@ -117,7 +117,7 @@ describe('welcome page served via HTTP', () => {
   test('does NOT auto-hide based on extension detection alone', () => {
     // The arrow should only hide when the sidebar actually opens,
     // not when the content script loads (which happens on every page)
-    expect(html).not.toContain('gstack-status-pill');
+    expect(html).not.toContain('gbrowse-status-pill');
     expect(html).not.toContain('checkPill');
   });
 
@@ -136,8 +136,8 @@ describe('welcome page served via HTTP', () => {
 
   // ─── Footer ───────────────────────────────────────────────────────
 
-  test('has footer with attribution', () => {
-    expect(html).toContain('Garry Tan');
-    expect(html).toContain('github.com/garrytan/gstack');
+  test('no gstack-origin attribution links', () => {
+    expect(html).not.toContain('garrytan');
+    expect(html).not.toContain('Garry Tan');
   });
 });

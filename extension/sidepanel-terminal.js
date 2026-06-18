@@ -26,7 +26,7 @@
   const Terminal = window.Terminal;
   const FitAddonModule = window.FitAddon;
   if (!Terminal) {
-    console.error('[gstack terminal] xterm not loaded');
+    console.error('[gbrowse terminal] xterm not loaded');
     return;
   }
 
@@ -66,7 +66,7 @@
   let autoConnectAborted = false;
   /**
    * v1.44 session identity. The stable, non-secret sessionId minted by
-   * /pty-session and surfaced back via window.gstackPtySession so the
+   * /pty-session and surfaced back via window.gbrowsePtySession so the
    * sidepanel.js pagehide handler can sendBeacon /pty-dispose for THIS
    * specific session. forceRestart sends this to /pty-restart so the
    * server can scope the disposal to one terminal rather than all.
@@ -150,19 +150,19 @@
   /**
    * Read auth + terminalPort from the server's /health. We don't fetch this
    * here — sidepanel.js already polls /health for connection state and
-   * exposes the relevant fields on window.gstackHealth (set below in init()).
+   * exposes the relevant fields on window.gbrowseHealth (set below in init()).
    * If terminalPort is missing, the agent isn't ready yet.
    */
   function getHealth() {
-    return window.gstackHealth || {};
+    return window.gbrowseHealth || {};
   }
 
   function getServerPort() {
-    return window.gstackServerPort || null;
+    return window.gbrowseServerPort || null;
   }
 
   function getAuthToken() {
-    return window.gstackAuthToken || null;
+    return window.gbrowseAuthToken || null;
   }
 
   /**
@@ -265,7 +265,7 @@
         reattachInFlight = false;
         autoConnectAborted = true;
         setState(STATE.IDLE, {
-          message: 'Auth invalid — reload the sidebar or restart your gstack session.',
+          message: 'Auth invalid — reload the sidebar or restart your gbrowse session.',
         });
         return;
       }
@@ -301,11 +301,11 @@
    */
   function openReattachWebSocket(terminalPort, attachToken, sessionId) {
     currentSessionId = sessionId || null;
-    try { window.gstackPtySession = currentSessionId; } catch {}
+    try { window.gbrowsePtySession = currentSessionId; } catch {}
     setState(STATE.LIVE);
     ensureXterm();
     nextBinaryIsReplay = false;
-    ws = new WebSocket(`ws://127.0.0.1:${terminalPort}/ws`, [`gstack-pty.${attachToken}`]);
+    ws = new WebSocket(`ws://127.0.0.1:${terminalPort}/ws`, [`gbrowse-pty.${attachToken}`]);
     ws.binaryType = 'arraybuffer';
 
     ws.addEventListener('open', () => {
@@ -372,7 +372,7 @@
       startReattachLoop(currentSessionId);
     });
     ws.addEventListener('error', (err) => {
-      console.error('[gstack terminal] reattach ws error', err);
+      console.error('[gbrowse terminal] reattach ws error', err);
     });
   }
 
@@ -465,18 +465,18 @@
    * Returns true if the bytes went out, false if no live session.
    *
    * IMPORTANT (D6): this function stays SYNCHRONOUS and SCAN-FREE. Page-
-   * derived input MUST be pre-scanned via window.gstackScanForPTYInject()
+   * derived input MUST be pre-scanned via window.gbrowseScanForPTYInject()
    * before calling this. The invariant test in
    * test/extension-pty-inject-invariant.test.ts fails the build if any
    * extension/*.js path calls this without the preceding scan.
    *
    * Why not move the scan inside this function: callers already use the
-   * sync `const ok = gstackInjectToTerminal?.(text)` pattern. Making the
+   * sync `const ok = gbrowseInjectToTerminal?.(text)` pattern. Making the
    * inject async would turn `ok` into a Promise and silently break every
    * existing call site. Pre-scanning at the caller keeps the boundary
    * clean and the invariant testable.
    */
-  window.gstackInjectToTerminal = function (text) {
+  window.gbrowseInjectToTerminal = function (text) {
     if (!text || !ws || ws.readyState !== WebSocket.OPEN) return false;
     try {
       ws.send(new TextEncoder().encode(text));
@@ -501,7 +501,7 @@
    *
    * Closes #1370.
    */
-  window.gstackScanForPTYInject = async function (text, origin) {
+  window.gbrowseScanForPTYInject = async function (text, origin) {
     if (!text) return { allow: false, verdict: 'BLOCK', reasons: ['empty-text'] };
     try {
       const resp = await fetch('http://127.0.0.1:34567/pty-inject-scan', {
@@ -534,12 +534,12 @@
   // We don't echo the token here; this helper is a thin proxy around the
   // existing pattern.
   async function getAuthTokenForScan() {
-    if (window.__gstackPtyScanToken) return window.__gstackPtyScanToken;
+    if (window.__gbrowsePtyScanToken) return window.__gbrowsePtyScanToken;
     try {
       const resp = await fetch('http://127.0.0.1:34567/health');
       const body = await resp.json();
       const token = body.AUTH_TOKEN || body.authToken || '';
-      if (token) window.__gstackPtyScanToken = token;
+      if (token) window.__gbrowsePtyScanToken = token;
       return token;
     } catch {
       return '';
@@ -558,7 +558,7 @@
       if (typeof minted.error === 'string' && minted.error.startsWith('401')) {
         autoConnectAborted = true;
         setState(STATE.IDLE, {
-          message: 'Auth invalid — reload the sidebar or restart your gstack session.',
+          message: 'Auth invalid — reload the sidebar or restart your gbrowse session.',
         });
         return;
       }
@@ -577,7 +577,7 @@
     }
     currentSessionId = sessionId || null;
     // Expose for sidepanel.js pagehide handler — see Commit 2C wiring.
-    try { window.gstackPtySession = currentSessionId; } catch {}
+    try { window.gbrowsePtySession = currentSessionId; } catch {}
 
     // Pre-flight: does claude even exist on PATH?
     const claudeStatus = await checkClaudeAvailable(terminalPort);
@@ -599,7 +599,7 @@
     // SameSite=Strict don't survive the jump from server.ts:34567 to the
     // agent's random port from a chrome-extension origin, so cookies
     // alone weren't reliable.
-    ws = new WebSocket(`ws://127.0.0.1:${terminalPort}/ws`, [`gstack-pty.${attachToken}`]);
+    ws = new WebSocket(`ws://127.0.0.1:${terminalPort}/ws`, [`gbrowse-pty.${attachToken}`]);
     ws.binaryType = 'arraybuffer';
 
     ws.addEventListener('open', () => {
@@ -688,7 +688,7 @@
     });
 
     ws.addEventListener('error', (err) => {
-      console.error('[gstack terminal] ws error', err);
+      console.error('[gbrowse terminal] ws error', err);
     });
   }
 
@@ -773,7 +773,7 @@
       } else if (resp.status === 401) {
         autoConnectAborted = true;
         setState(STATE.IDLE, {
-          message: 'Auth invalid — reload the sidebar or restart your gstack session.',
+          message: 'Auth invalid — reload the sidebar or restart your gbrowse session.',
         });
         return;
       } else if (resp.status === 503) {
@@ -794,7 +794,7 @@
       // Restart didn't yield a fresh tuple. Fall back to the regular
       // connect path; tryAutoConnect will retry as the server recovers.
       currentSessionId = null;
-      try { window.gstackPtySession = null; } catch {}
+      try { window.gbrowsePtySession = null; } catch {}
       tryAutoConnect();
       return;
     }
@@ -810,7 +810,7 @@
       return;
     }
     currentSessionId = sessionId || null;
-    try { window.gstackPtySession = currentSessionId; } catch {}
+    try { window.gbrowsePtySession = currentSessionId; } catch {}
 
     // Pre-flight: claude still on PATH?
     const claudeStatus = await checkClaudeAvailable(terminalPort);
@@ -821,7 +821,7 @@
 
     setState(STATE.LIVE);
     ensureXterm();
-    ws = new WebSocket(`ws://127.0.0.1:${terminalPort}/ws`, [`gstack-pty.${token}`]);
+    ws = new WebSocket(`ws://127.0.0.1:${terminalPort}/ws`, [`gbrowse-pty.${token}`]);
     ws.binaryType = 'arraybuffer';
 
     ws.addEventListener('open', () => {
@@ -893,7 +893,7 @@
       setState(STATE.ENDED);
     });
     ws.addEventListener('error', (err) => {
-      console.error('[gstack terminal] ws error', err);
+      console.error('[gbrowse terminal] ws error', err);
     });
   }
 
@@ -936,7 +936,7 @@
     // forward over the live PTY WebSocket; terminal-agent.ts writes
     // <stateDir>/active-tab.json + <stateDir>/tabs.json so claude can
     // always read the current tab landscape.
-    document.addEventListener('gstack:tab-state', (ev) => {
+    document.addEventListener('gbrowse:tab-state', (ev) => {
       if (!ws || ws.readyState !== WebSocket.OPEN) return;
       try {
         ws.send(JSON.stringify({
@@ -967,7 +967,7 @@
 
   /**
    * Eager-connect when the sidebar opens. Polls for sidepanel.js to populate
-   * window.gstackServerPort + window.gstackAuthToken (which it does as soon
+   * window.gbrowseServerPort + window.gbrowseAuthToken (which it does as soon
    * as /health succeeds), then fires connect() automatically. The user
    * doesn't have to press a key — Terminal is the default tab and "tap to
    * start" was a needless paper cut on every reload.

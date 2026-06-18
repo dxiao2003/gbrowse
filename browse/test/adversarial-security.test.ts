@@ -21,7 +21,7 @@ describe('Adversarial security', () => {
   });
 
   test.skip('freeze hook uses trailing slash in boundary check', () => {
-    // freeze/ is a gstack-only feature not present in gbrowse
+    // freeze/ is a gbrowse-only feature not present in gbrowse
     const source = fs.readFileSync(
       path.join(import.meta.dir, '../../freeze/bin/check-freeze.sh'),
       'utf-8',

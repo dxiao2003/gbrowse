@@ -9,7 +9,7 @@
  *      consistency — letting plugins/languages/chrome.runtime surface
  *      native Chromium values keeps the fingerprint internally coherent.
  *
- *   2. EXTENDED (opt-in via GSTACK_STEALTH=extended): six additional
+ *   2. EXTENDED (opt-in via GBROWSE_STEALTH=extended): six additional
  *      detection-vector patches on top of the default. Closes the
  *      SannySoft test corpus to a 100% pass rate. Originally proposed in
  *      PR #1112 (garrytan, Apr 2026).
@@ -167,7 +167,7 @@ export const EXTENDED_STEALTH_SCRIPT = `
 `;
 
 function extendedModeEnabled(): boolean {
-  const v = process.env.GSTACK_STEALTH;
+  const v = process.env.GBROWSE_STEALTH ?? process.env.GSTACK_STEALTH;
   return v === 'extended' || v === '1' || v === 'true';
 }
 
@@ -175,7 +175,7 @@ function extendedModeEnabled(): boolean {
  * Apply stealth patches to a fresh BrowserContext (or persistent
  * context). Called by browser-manager.launch() and launchHeaded().
  * Always applies the WEBDRIVER_MASK_SCRIPT; only applies the
- * EXTENDED_STEALTH_SCRIPT when GSTACK_STEALTH=extended.
+ * EXTENDED_STEALTH_SCRIPT when GBROWSE_STEALTH=extended.
  */
 export async function applyStealth(context: BrowserContext): Promise<void> {
   await context.addInitScript({ content: WEBDRIVER_MASK_SCRIPT });

@@ -1,5 +1,5 @@
 /**
- * gstack browse — Side Panel
+ * gbrowse browse — Side Panel
  *
  * Terminal pane (default): live claude PTY via xterm.js, driven by
  * sidepanel-terminal.js. The chat queue + sidebar-agent.ts were ripped
@@ -105,7 +105,7 @@ document.getElementById('chat-cookies-btn').addEventListener('click', async () =
       body: JSON.stringify({ command: 'goto', args: [`${serverUrl}/cookie-picker`] }),
     });
   } catch (err) {
-    console.error('[gstack sidebar] Failed to open cookie picker:', err.message);
+    console.error('[gbrowse sidebar] Failed to open cookie picker:', err.message);
   }
 });
 
@@ -259,7 +259,7 @@ async function ensureSseSessionCookie() {
     });
     return resp.ok;
   } catch (err) {
-    console.warn('[gstack sidebar] Failed to mint SSE session cookie:', err && err.message);
+    console.warn('[gbrowse sidebar] Failed to mint SSE session cookie:', err && err.message);
     return false;
   }
 }
@@ -274,7 +274,7 @@ async function connectSSE() {
 
   eventSource.addEventListener('activity', (e) => {
     try { addEntry(JSON.parse(e.data)); } catch (err) {
-      console.error('[gstack sidebar] Failed to parse activity event:', err.message);
+      console.error('[gbrowse sidebar] Failed to parse activity event:', err.message);
     }
   });
 
@@ -287,7 +287,7 @@ async function connectSSE() {
       banner.textContent = `Missed ${data.availableFrom - data.gapFrom} events`;
       feed.appendChild(banner);
     } catch (err) {
-      console.error('[gstack sidebar] Failed to parse gap event:', err.message);
+      console.error('[gbrowse sidebar] Failed to parse gap event:', err.message);
     }
   });
 }
@@ -344,7 +344,7 @@ async function pollMemoryOnce() {
     // Evaluate guardrail triggers (single-heavy-tab OR tab-count crossing 200).
     // Toast is hidden when no trigger fires; snooze state suppresses re-fire.
     try { evaluateMemToast(snapshot); } catch (err) {
-      console.debug('[gstack sidebar] mem-toast evaluation failed:', err && err.message);
+      console.debug('[gbrowse sidebar] mem-toast evaluation failed:', err && err.message);
     }
     return { ok: true, slow: elapsed > MEM_POLL_SLOW_THRESHOLD_MS };
   } catch (err) {
@@ -353,7 +353,7 @@ async function pollMemoryOnce() {
     // sessions. Only log on the slow path so the user sees something in the
     // console if the diagnostic itself is misbehaving.
     if (elapsed > MEM_POLL_SLOW_THRESHOLD_MS) {
-      console.debug('[gstack sidebar] /memory poll slow/failed:', elapsed, 'ms', err && err.message);
+      console.debug('[gbrowse sidebar] /memory poll slow/failed:', elapsed, 'ms', err && err.message);
     }
     return { ok: false, slow: elapsed > MEM_POLL_SLOW_THRESHOLD_MS };
   }
@@ -419,7 +419,7 @@ async function loadSnoozeState() {
       memToastSnooze.heapAbove = stored.memToastSnooze.heapAbove | 0;
     }
   } catch (err) {
-    console.debug('[gstack sidebar] mem-toast snooze load failed:', err && err.message);
+    console.debug('[gbrowse sidebar] mem-toast snooze load failed:', err && err.message);
   }
 }
 
@@ -428,7 +428,7 @@ async function saveSnoozeState() {
   try {
     await chrome.storage.session.set({ memToastSnooze: { ...memToastSnooze } });
   } catch (err) {
-    console.debug('[gstack sidebar] mem-toast snooze save failed:', err && err.message);
+    console.debug('[gbrowse sidebar] mem-toast snooze save failed:', err && err.message);
   }
 }
 
@@ -499,7 +499,7 @@ function showMemToast(title, body, tabsForClose) {
           body: JSON.stringify({ command: 'closetab', args: [String(id)] }),
         });
       } catch (err) {
-        console.warn('[gstack sidebar] mem-toast closetab failed:', id, err && err.message);
+        console.warn('[gbrowse sidebar] mem-toast closetab failed:', id, err && err.message);
       }
     }
   };
@@ -565,7 +565,7 @@ function setupMemToastWiring() {
           await saveSnoozeState();
         }
       } catch (err) {
-        console.debug('[gstack sidebar] mem-toast snooze fetch failed:', err && err.message);
+        console.debug('[gbrowse sidebar] mem-toast snooze fetch failed:', err && err.message);
       }
       dismissMemToast();
     });
@@ -612,7 +612,7 @@ async function fetchRefs() {
     `).join('');
     footer.textContent = `${data.refs.length} refs`;
   } catch (err) {
-    console.error('[gstack sidebar] Failed to fetch refs:', err.message);
+    console.error('[gbrowse sidebar] Failed to fetch refs:', err.message);
   }
 }
 
@@ -998,10 +998,10 @@ inspectorSendBtn.addEventListener('click', async () => {
   // spawned a one-shot claude -p (sidebar-agent.ts is gone).
   //
   // Pre-scan via /pty-inject-scan before injection (D6, closes #1370).
-  // gstackScanForPTYInject is async; gstackInjectToTerminal stays sync.
-  const verdict = await window.gstackScanForPTYInject?.(message + '\n', 'inspector-send');
+  // gbrowseScanForPTYInject is async; gbrowseInjectToTerminal stays sync.
+  const verdict = await window.gbrowseScanForPTYInject?.(message + '\n', 'inspector-send');
   if (verdict?.verdict === 'BLOCK') {
-    console.warn('[gstack sidebar] Inspector send BLOCKED by /pty-inject-scan:', verdict.reasons);
+    console.warn('[gbrowse sidebar] Inspector send BLOCKED by /pty-inject-scan:', verdict.reasons);
     return;
   }
   if (verdict?.verdict === 'WARN') {
@@ -1010,9 +1010,9 @@ inspectorSendBtn.addEventListener('click', async () => {
     );
     if (!confirmed) return;
   }
-  const ok = window.gstackInjectToTerminal?.(message + '\n');
+  const ok = window.gbrowseInjectToTerminal?.(message + '\n');
   if (!ok) {
-    console.warn('[gstack sidebar] Inspector send needs an active Terminal session.');
+    console.warn('[gbrowse sidebar] Inspector send needs an active Terminal session.');
   }
 });
 
@@ -1041,10 +1041,10 @@ async function runCleanup(...buttons) {
   // The cleanup prompt is a STATIC template (no page-derived content), so
   // it will always PASS, but we still route it through the scan path so
   // the invariant test in test/extension-pty-inject-invariant.test.ts
-  // confirms every call site goes through gstackScanForPTYInject first.
-  const verdict = await window.gstackScanForPTYInject?.(cleanupPrompt + '\n', 'cleanup-button');
+  // confirms every call site goes through gbrowseScanForPTYInject first.
+  const verdict = await window.gbrowseScanForPTYInject?.(cleanupPrompt + '\n', 'cleanup-button');
   if (verdict?.verdict === 'BLOCK') {
-    console.warn('[gstack sidebar] Cleanup BLOCKED by /pty-inject-scan:', verdict.reasons);
+    console.warn('[gbrowse sidebar] Cleanup BLOCKED by /pty-inject-scan:', verdict.reasons);
     setTimeout(() => buttons.forEach(b => b?.classList.remove('loading')), 200);
     return;
   }
@@ -1057,9 +1057,9 @@ async function runCleanup(...buttons) {
       return;
     }
   }
-  const sent = window.gstackInjectToTerminal?.(cleanupPrompt + '\n');
+  const sent = window.gbrowseInjectToTerminal?.(cleanupPrompt + '\n');
   if (!sent) {
-    console.warn('[gstack sidebar] Cleanup needs an active Terminal session.');
+    console.warn('[gbrowse sidebar] Cleanup needs an active Terminal session.');
   }
   setTimeout(() => buttons.forEach(b => b?.classList.remove('loading')), 1200);
 }
@@ -1076,12 +1076,12 @@ async function runScreenshot(...buttons) {
     });
     const text = await resp.text();
     if (!resp.ok) {
-      console.warn('[gstack sidebar] Screenshot failed:', text);
+      console.warn('[gbrowse sidebar] Screenshot failed:', text);
     } else {
-      console.log('[gstack sidebar] Screenshot:', text);
+      console.log('[gbrowse sidebar] Screenshot:', text);
     }
   } catch (err) {
-    console.error('[gstack sidebar] Screenshot error:', err.message);
+    console.error('[gbrowse sidebar] Screenshot error:', err.message);
   } finally {
     buttons.forEach(b => b?.classList.remove('loading'));
   }
@@ -1133,7 +1133,7 @@ async function connectInspectorSSE() {
         const data = JSON.parse(e.data);
         inspectorShowData(data);
       } catch (err) {
-        console.error('[gstack sidebar] Failed to parse inspectResult:', err.message);
+        console.error('[gbrowse sidebar] Failed to parse inspectResult:', err.message);
       }
     });
 
@@ -1142,7 +1142,7 @@ async function connectInspectorSSE() {
       if (inspectorSSE) { inspectorSSE.close(); inspectorSSE = null; }
     });
   } catch (err) {
-    console.debug('[gstack sidebar] Inspector SSE not available:', err.message);
+    console.debug('[gbrowse sidebar] Inspector SSE not available:', err.message);
   }
 }
 
@@ -1164,11 +1164,11 @@ function updateConnection(url, token) {
   // the bootstrap token to POST /pty-session and the port to derive the WS
   // URL. We never expose the PTY token — it lives in an HttpOnly cookie.
   if (url) {
-    try { window.gstackServerPort = parseInt(new URL(url).port, 10); } catch {}
-    window.gstackAuthToken = token || null;
+    try { window.gbrowseServerPort = parseInt(new URL(url).port, 10); } catch {}
+    window.gbrowseAuthToken = token || null;
   } else {
-    window.gstackServerPort = null;
-    window.gstackAuthToken = null;
+    window.gbrowseServerPort = null;
+    window.gbrowseAuthToken = null;
   }
   if (url) {
     document.getElementById('footer-dot').className = 'dot connected';
@@ -1227,16 +1227,18 @@ portInput.addEventListener('keydown', (e) => {
 
 // ─── Reconnect / Copy Buttons ────────────────────────────────────
 
+const OPEN_BROWSER_COMMAND = '/open-browser';
+
 document.getElementById('conn-reconnect').addEventListener('click', () => {
   reconnectAttempts = 0;
   startReconnect();
 });
 
 document.getElementById('conn-copy').addEventListener('click', () => {
-  navigator.clipboard.writeText('/open-gstack-browser').then(() => {
+  navigator.clipboard.writeText(OPEN_BROWSER_COMMAND).then(() => {
     const btn = document.getElementById('conn-copy');
     btn.textContent = 'copied!';
-    setTimeout(() => { btn.textContent = '/open-gstack-browser'; }, 2000);
+    setTimeout(() => { btn.textContent = OPEN_BROWSER_COMMAND; }, 2000);
   });
 });
 
@@ -1328,7 +1330,7 @@ async function tryConnect() {
   } catch (e) {
     setLoadingStatus(
       `Server not reachable on port ${port} (attempt ${connectAttempts})`,
-      `GET /health failed: ${e.message}\n\nThe browse server may still be starting.\nRun /open-gstack-browser in Claude Code.`
+      `GET /health failed: ${e.message}\n\nThe browse server may still be starting.\nRun ${OPEN_BROWSER_COMMAND} in Claude Code.`
     );
   }
 
@@ -1373,7 +1375,7 @@ chrome.runtime.onMessage.addListener((msg) => {
   // custom event so sidepanel-terminal.js can relay to terminal-agent.ts.
   // Result: claude's <stateDir>/tabs.json + active-tab.json stay live.
   if (msg.type === 'browserTabState') {
-    document.dispatchEvent(new CustomEvent('gstack:tab-state', {
+    document.dispatchEvent(new CustomEvent('gbrowse:tab-state', {
       detail: { active: msg.active, tabs: msg.tabs, reason: msg.reason },
     }));
   }
@@ -1400,9 +1402,9 @@ chrome.runtime.onMessage.addListener((msg) => {
 // /pty-dispose route accepts the auth token in the BODY (see
 // server-pty-lease-routes.test.ts test 4).
 window.addEventListener('pagehide', () => {
-  const sessionId = window.gstackPtySession;
-  const authToken = window.gstackAuthToken;
-  const port = window.gstackServerPort;
+  const sessionId = window.gbrowsePtySession;
+  const authToken = window.gbrowseAuthToken;
+  const port = window.gbrowseServerPort;
   if (!sessionId || !authToken || !port) return;
   try {
     const blob = new Blob([JSON.stringify({ sessionId, authToken })], {

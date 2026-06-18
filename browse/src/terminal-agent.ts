@@ -1,5 +1,5 @@
 /**
- * Terminal Agent — PTY-backed Claude Code terminal for the gstack browser
+ * Terminal Agent — PTY-backed Claude Code terminal for the gbrowse browser
  * sidebar. Translates the phoenix gbrowser PTY (cmd/gbd/terminal.go) into
  * Bun, with a few changes informed by codex's outside-voice review:
  *
@@ -145,7 +145,7 @@ export interface PtySession {
  * minute per assertion.
  */
 const KEEPALIVE_INTERVAL_MS = parseInt(
-  process.env.GSTACK_PTY_KEEPALIVE_INTERVAL_MS || '25000',
+  (process.env.GBROWSE_PTY_KEEPALIVE_INTERVAL_MS ?? process.env.GSTACK_PTY_KEEPALIVE_INTERVAL_MS) || '25000',
   10,
 );
 
@@ -157,7 +157,7 @@ const KEEPALIVE_INTERVAL_MS = parseInt(
  * of fixture data per assertion.
  */
 const RING_BUFFER_MAX_BYTES = parseInt(
-  process.env.GSTACK_PTY_RING_BUFFER_BYTES || `${1024 * 1024}`,
+  (process.env.GBROWSE_PTY_RING_BUFFER_BYTES ?? process.env.GSTACK_PTY_RING_BUFFER_BYTES) || `${1024 * 1024}`,
   10,
 );
 
@@ -170,7 +170,7 @@ const RING_BUFFER_MAX_BYTES = parseInt(
  * stack up unbounded.
  */
 const DETACH_WINDOW_MS = parseInt(
-  process.env.GSTACK_PTY_DETACH_WINDOW_MS || '60000',
+  (process.env.GBROWSE_PTY_DETACH_WINDOW_MS ?? process.env.GSTACK_PTY_DETACH_WINDOW_MS) || '60000',
   10,
 );
 
@@ -283,7 +283,7 @@ function writeClaudeAvailable(): void {
  *
  * Two paths claude has:
  *   1. Read live state from <stateDir>/tabs.json + active-tab.json
- *      (updated continuously by the gstack browser extension).
+ *      (updated continuously by the gbrowse browser extension).
  *   2. Run $B tab, $B tabs, $B tab-each <command> to act on tabs. The
  *      tab-each helper fans a single command across every open tab and
  *      returns per-tab results as JSON.
@@ -292,7 +292,7 @@ function buildTabAwarenessHint(stateDir: string): string {
   const tabsFile = path.join(stateDir, 'tabs.json');
   const activeFile = path.join(stateDir, 'active-tab.json');
   return [
-    'You are running inside the gstack browser sidebar with live access to the user\'s browser tabs.',
+    'You are running inside the gbrowse browser sidebar with live access to the user\'s browser tabs.',
     '',
     'Tab state files (kept fresh automatically by the extension):',
     `  ${tabsFile}        — all open tabs (id, url, title, active, pinned)`,
@@ -321,7 +321,7 @@ function spawnClaude(cols: number, rows: number, onData: (chunk: Buffer) => void
 
   // Match phoenix env so claude knows which browse server to talk to and
   // doesn't try to autostart its own. BROWSE_HEADED=1 keeps the existing
-  // headed-mode browser; BROWSE_NO_AUTOSTART prevents claude's gstack
+  // headed-mode browser; BROWSE_NO_AUTOSTART prevents claude's gbrowse
   // tooling from racing to spawn another server.
   const env: Record<string, string> = {
     ...process.env as any,
@@ -575,7 +575,7 @@ function buildServer() {
       //       transports for compatibility:
       //         - Sec-WebSocket-Protocol (preferred for browsers — the only
       //           auth header settable from the browser WebSocket API)
-      //         - Cookie gstack_pty (works for non-browser callers and
+      //         - Cookie gbrowse_pty (works for non-browser callers and
       //           same-port browser callers; doesn't survive the cross-port
       //           jump from server.ts:34567 to the agent's random port
       //           when SameSite=Strict is set)
@@ -593,14 +593,14 @@ function buildServer() {
         }
 
         // Try Sec-WebSocket-Protocol first. Format: a single token, possibly
-        // with a `gstack-pty.` prefix (which we strip). Browsers send a
+        // with a `gbrowse-pty.` prefix (which we strip). Browsers send a
         // comma-separated list when multiple were requested; we pick the
         // first that matches a known token.
         const protoHeader = req.headers.get('sec-websocket-protocol') || '';
         let token: string | null = null;
         let acceptedProtocol: string | null = null;
         for (const raw of protoHeader.split(',').map(s => s.trim()).filter(Boolean)) {
-          const candidate = raw.startsWith('gstack-pty.') ? raw.slice('gstack-pty.'.length) : raw;
+          const candidate = raw.startsWith('gbrowse-pty.') ? raw.slice('gbrowse-pty.'.length) : raw;
           if (validTokens.has(candidate)) {
             token = candidate;
             acceptedProtocol = raw;
@@ -608,12 +608,12 @@ function buildServer() {
           }
         }
 
-        // Fallback: Cookie gstack_pty (legacy / non-browser callers).
+        // Fallback: Cookie gbrowse_pty (legacy / non-browser callers).
         if (!token) {
           const cookieHeader = req.headers.get('cookie') || '';
           for (const part of cookieHeader.split(';')) {
             const [name, ...rest] = part.trim().split('=');
-            if (name === 'gstack_pty') {
+            if (name === 'gbrowse_pty') {
               const candidate = rest.join('=') || null;
               if (candidate && validTokens.has(candidate)) {
                 token = candidate;
@@ -975,7 +975,7 @@ function main() {
 
   // Write identity-based agent record (pid + per-boot gen). Replaces the
   // v1.43- `pkill -f terminal-agent\.ts` regex teardown that could kill
-  // sibling gstack sessions. Callers (cli.ts spawn site, server.ts
+  // sibling gbrowse sessions. Callers (cli.ts spawn site, server.ts
   // shutdown, the v1.44 watchdog) now route through killAgentByRecord in
   // terminal-agent-control.ts.
   writeAgentRecord(dir, { pid: process.pid, gen: CURRENT_GEN, startedAt: Date.now() });

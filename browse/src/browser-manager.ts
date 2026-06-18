@@ -26,20 +26,20 @@ import { withCdpSession } from './cdp-bridge';
 import type { MemorySnapshot, MemoryStructureStats, MemoryTabSnapshot, MemoryProcess } from './memory-snapshot';
 
 /**
- * Detect whether GSTACK_CHROMIUM_PATH points at a custom Chromium build that
- * already bakes the gstack extension in as a component extension (e.g.,
- * GStack Browser.app / GBrowser). Passing --load-extension against such a
+ * Detect whether GBROWSE_CHROMIUM_PATH points at a custom Chromium build that
+ * already bakes the gbrowse extension in as a component extension (e.g.,
+ * GBrowse Browser.app / GBrowser). Passing --load-extension against such a
  * binary triggers a ServiceWorkerState::SetWorkerId DCHECK because two
  * copies of the same service worker try to register.
  *
  * Resolution:
- *   1. GSTACK_CHROMIUM_KIND === 'custom-extension-baked' (preferred, explicit)
- *   2. GSTACK_CHROMIUM_PATH path substring contains 'GBrowser' or 'gbrowser'
+ *   1. GBROWSE_CHROMIUM_KIND === 'custom-extension-baked' (preferred, explicit)
+ *   2. GBROWSE_CHROMIUM_PATH path substring contains 'GBrowser' or 'gbrowser'
  *      (fallback for callers that only set the path)
  */
 export function isCustomChromium(): boolean {
-  if (process.env.GSTACK_CHROMIUM_KIND === 'custom-extension-baked') return true;
-  const p = process.env.GSTACK_CHROMIUM_PATH || '';
+  if ((process.env.GBROWSE_CHROMIUM_KIND ?? process.env.GSTACK_CHROMIUM_KIND) === 'custom-extension-baked') return true;
+  const p = (process.env.GBROWSE_CHROMIUM_PATH ?? process.env.GSTACK_CHROMIUM_PATH) || '';
   return p.includes('GBrowser') || p.includes('gbrowser');
 }
 
@@ -65,10 +65,10 @@ export function shouldEnableChromiumSandbox(): boolean {
   // Explicit user override for Ubuntu/AppArmor and similar environments where
   // unprivileged Chromium sandboxing is blocked even for normal users (the
   // sandbox needs unprivileged user namespaces that the host policy denies,
-  // so /qa hangs without --no-sandbox). Setting GSTACK_CHROMIUM_NO_SANDBOX=1
+  // so /qa hangs without --no-sandbox). Setting GBROWSE_CHROMIUM_NO_SANDBOX=1
   // forces the sandbox off without changing the default for everyone else.
   // See #1562.
-  if (process.env.GSTACK_CHROMIUM_NO_SANDBOX === '1') return false;
+  if ((process.env.GBROWSE_CHROMIUM_NO_SANDBOX ?? process.env.GSTACK_CHROMIUM_NO_SANDBOX) === '1') return false;
   const isRoot = typeof process.getuid === 'function' && process.getuid() === 0;
   return !(process.env.CI || process.env.CONTAINER || isRoot);
 }
@@ -281,25 +281,25 @@ export class BrowserManager {
   }
 
   /**
-   * Find the gstack Chrome extension directory.
+   * Find the gbrowse Chrome extension directory.
    * Checks: repo root /extension, global install, dev install.
    */
   private findExtensionPath(): string | null {
     const fs = require('fs');
     const path = require('path');
     const candidates = [
-      // Explicit override via env var (used by GStack Browser.app bundle)
+      // Explicit override via env var (used by GBrowse Browser.app bundle)
       process.env.BROWSE_EXTENSIONS_DIR || '',
       // Relative to this source file (dev mode: browse/src/ -> ../../extension)
       path.resolve(__dirname, '..', '..', 'extension'),
-      // Global gstack install
-      path.join(process.env.HOME || '', '.claude', 'skills', 'gstack', 'extension'),
+      // Global gbrowse install
+      path.join(process.env.HOME || '', '.claude', 'skills', 'gbrowse', 'extension'),
       // Git repo root (detected via BROWSE_STATE_FILE location)
       (() => {
         const stateFile = process.env.BROWSE_STATE_FILE || '';
         if (stateFile) {
           const repoRoot = path.resolve(path.dirname(stateFile), '..');
-          return path.join(repoRoot, '.claude', 'skills', 'gstack', 'extension');
+          return path.join(repoRoot, '.claude', 'skills', 'gbrowse', 'extension');
         }
         return '';
       })(),
@@ -356,7 +356,7 @@ export class BrowserManager {
 
     if (extensionsDir) {
       // Skip --load-extension when running against a custom Chromium build that
-      // already bakes the extension in (e.g., GBrowser / GStack Browser.app).
+      // already bakes the extension in (e.g., GBrowser / GBrowse Browser.app).
       // Loading it twice causes a ServiceWorkerState::SetWorkerId DCHECK crash.
       if (!isCustomChromium()) {
         launchArgs.push(
@@ -420,7 +420,7 @@ export class BrowserManager {
 
   // ─── Headed Mode ─────────────────────────────────────────────
   /**
-   * Launch Playwright's bundled Chromium in headed mode with the gstack
+   * Launch Playwright's bundled Chromium in headed mode with the gbrowse
    * Chrome extension auto-loaded. Uses launchPersistentContext() which
    * is required for extension loading (launch() + newContext() can't
    * load extensions).
@@ -434,7 +434,7 @@ export class BrowserManager {
     this.tabSessions.clear();
     this.nextTabId = 1;
 
-    // Find the gstack extension directory for auto-loading
+    // Find the gbrowse extension directory for auto-loading
     const extensionPath = this.findExtensionPath();
     const launchArgs = [
       '--hide-crash-restore-bubble',
@@ -445,23 +445,23 @@ export class BrowserManager {
     if (extensionPath) {
       // Skip --load-extension when running against a custom Chromium build
       // that already bakes the extension in as a component extension
-      // (gbrowser / GStack Browser.app). Loading it twice causes a
+      // (gbrowser / GBrowse Browser.app). Loading it twice causes a
       // ServiceWorkerState::SetWorkerId DCHECK crash.
       if (!isCustomChromium()) {
         launchArgs.push(`--disable-extensions-except=${extensionPath}`);
         launchArgs.push(`--load-extension=${extensionPath}`);
       }
       // Write auth token for extension bootstrap (still required even when
-      // the extension is component-baked — it reads ~/.gstack/.auth.json at
+      // the extension is component-baked — it reads ~/.gbrowse/.auth.json at
       // startup to learn how to call the daemon).
-      // Write to ~/.gstack/.auth.json (not the extension dir, which may be read-only
+      // Write to ~/.gbrowse/.auth.json (not the extension dir, which may be read-only
       // in .app bundles and breaks codesigning).
       if (authToken) {
         const fs = require('fs');
         const path = require('path');
-        const gstackDir = path.join(process.env.GBROWSE_HOME || process.env.GSTACK_HOME || (process.env.HOME || '/tmp') + '/.gbrowse');
-        mkdirSecure(gstackDir);
-        const authFile = path.join(gstackDir, '.auth.json');
+        const gbrowseDir = path.join(process.env.GBROWSE_HOME || process.env.GSTACK_HOME || (process.env.HOME || '/tmp') + '/.gbrowse');
+        mkdirSecure(gbrowseDir);
+        const authFile = path.join(gbrowseDir, '.auth.json');
         try {
           writeSecureFile(authFile, JSON.stringify({ token: authToken, port: this.serverPort || 34567 }));
         } catch (err: any) {
@@ -484,14 +484,14 @@ export class BrowserManager {
     // (SIGKILL, hard crash) — the lockfiles point at a PID that may no longer
     // exist. Shutdown cleanup doesn't run on hard crashes, so we clean here
     // too. Safe under external coordination: gbd.lock for gbrowser,
-    // single-instance CLI check for gstack.
+    // single-instance CLI check for gbrowse.
     cleanSingletonLocks(userDataDir);
 
-    // Support custom Chromium binary via GSTACK_CHROMIUM_PATH env var.
-    // Used by GStack Browser.app to point at the bundled Chromium.
-    const executablePath = process.env.GSTACK_CHROMIUM_PATH || undefined;
+    // Support custom Chromium binary via GBROWSE_CHROMIUM_PATH env var.
+    // Used by GBrowse Browser.app to point at the bundled Chromium.
+    const executablePath = (process.env.GBROWSE_CHROMIUM_PATH ?? process.env.GSTACK_CHROMIUM_PATH) || undefined;
 
-    // Rebrand Chromium → GStack Browser in macOS menu bar / Dock / Cmd+Tab.
+    // Rebrand Chromium → GBrowse Browser in macOS menu bar / Dock / Cmd+Tab.
     // Patch the Chromium .app's Info.plist so macOS shows our name.
     // This works for both dev mode (system Playwright cache) and .app bundle.
     const chromePath = executablePath || chromium.executablePath();
@@ -505,13 +505,13 @@ export class BrowserManager {
         const plistContent = fs.readFileSync(chromePlist, 'utf-8');
         if (plistContent.includes('Google Chrome for Testing')) {
           const patched = plistContent
-            .replace(/Google Chrome for Testing/g, 'GStack Browser');
+            .replace(/Google Chrome for Testing/g, 'GBrowse Browser');
           fs.writeFileSync(chromePlist, patched);
         }
         // Replace Chromium's Dock icon with ours (Chromium's process owns the Dock icon)
         const iconCandidates = [
           path.join(__dirname, '..', '..', 'scripts', 'app', 'icon.icns'),       // repo dev mode
-          path.join(process.env.HOME || '', '.claude', 'skills', 'gstack', 'scripts', 'app', 'icon.icns'), // global install
+          path.join(process.env.HOME || '', '.claude', 'skills', 'gbrowse', 'scripts', 'app', 'icon.icns'), // global install
         ];
         const iconSrc = iconCandidates.find(p => fs.existsSync(p));
         if (iconSrc) {
@@ -534,7 +534,7 @@ export class BrowserManager {
     }
 
     // Build custom user agent: keep Chrome version for site compatibility,
-    // but replace "Chrome for Testing" branding with "GStackBrowser"
+    // but replace "Chrome for Testing" branding with "GBrowseBrowser"
     let customUA: string | undefined;
     if (!this.customUserAgent) {
       // Detect Chrome version from the Chromium binary
@@ -547,10 +547,10 @@ export class BrowserManager {
         // Output like: "Google Chrome for Testing 145.0.6422.0" or "Chromium 145.0.6422.0"
         const versionMatch = versionOutput.match(/(\d+\.\d+\.\d+\.\d+)/);
         const chromeVersion = versionMatch ? versionMatch[1] : '131.0.0.0';
-        customUA = `Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${chromeVersion} Safari/537.36 GStackBrowser`;
+        customUA = `Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${chromeVersion} Safari/537.36 GBrowseBrowser`;
       } catch {
         // Fallback: generic modern Chrome UA
-        customUA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 GStackBrowser';
+        customUA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 GBrowseBrowser';
       }
     }
 
@@ -623,27 +623,27 @@ export class BrowserManager {
     // Extension's content script handles the floating pill
     const indicatorScript = () => {
       const injectIndicator = () => {
-        if (document.getElementById('gstack-ctrl')) return;
+        if (document.getElementById('gbrowse-ctrl')) return;
 
         const topLine = document.createElement('div');
-        topLine.id = 'gstack-ctrl';
+        topLine.id = 'gbrowse-ctrl';
         topLine.style.cssText = `
           position: fixed; top: 0; left: 0; right: 0; height: 2px;
           background: linear-gradient(90deg, #F59E0B, #FBBF24, #F59E0B);
           background-size: 200% 100%;
-          animation: gstack-shimmer 3s linear infinite;
+          animation: gbrowse-shimmer 3s linear infinite;
           pointer-events: none; z-index: 2147483647;
           opacity: 0.8;
         `;
 
         const style = document.createElement('style');
         style.textContent = `
-          @keyframes gstack-shimmer {
+          @keyframes gbrowse-shimmer {
             0% { background-position: 200% 0; }
             100% { background-position: -200% 0; }
           }
           @media (prefers-reduced-motion: reduce) {
-            #gstack-ctrl { animation: none !important; }
+            #gbrowse-ctrl { animation: none !important; }
           }
         `;
 
@@ -817,15 +817,14 @@ export class BrowserManager {
     this.tabSessions.delete(tabId);
     this.tabOwnership.delete(tabId);
 
-    // Switch to another tab if we closed the active one
-    if (tabId === this.activeTabId) {
+    // Never leave the browser with zero tabs, regardless of whether the closed
+    // tab was the active one (activeTabId may be stale after prior closes).
+    if (this.pages.size === 0) {
+      await this.newTab();
+    } else if (!this.pages.has(this.activeTabId)) {
+      // Active tab is gone — switch to a remaining one.
       const remaining = [...this.pages.keys()];
-      if (remaining.length > 0) {
-        this.activeTabId = remaining[remaining.length - 1];
-      } else {
-        // No tabs left — create a new blank one
-        await this.newTab();
-      }
+      this.activeTabId = remaining[remaining.length - 1];
     }
   }
 
@@ -1485,7 +1484,7 @@ export class BrowserManager {
       throw new Error(`viewport --scale: value must be a finite number, got ${scale}`);
     }
     if (scale < 1 || scale > 3) {
-      throw new Error(`viewport --scale: value must be between 1 and 3 (gstack policy cap), got ${scale}`);
+      throw new Error(`viewport --scale: value must be between 1 and 3 (gbrowse policy cap), got ${scale}`);
     }
     if (this.connectionMode === 'headed') {
       throw new Error('viewport --scale is not supported in headed mode — scale is controlled by the real browser window.');

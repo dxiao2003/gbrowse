@@ -1,0 +1,19 @@
+{
+  "name": "gbrowse",
+  "owner": {
+    "name": "gbrowse contributors"
+  },
+  "metadata": {
+    "description": "Marketplace for the gbrowse browser-automation plugin."
+  },
+  "plugins": [
+    {
+      "name": "gbrowse",
+      "source": "./",
+      "description": "Fast headless+headed browser for QA, dogfooding, and scraping, driven by Claude.",
+      "version": "1.0.0",
+      "license": "MIT",
+      "keywords": ["browser", "automation", "playwright", "headless", "scraping", "qa"]
+    }
+  ]
+}

@@ -174,7 +174,7 @@ async function killServer(pid: number): Promise<void> {
  * Verifies PID ownership before sending signals.
  */
 function cleanupLegacyState(): void {
-  // No legacy state on Windows — /tmp and `ps` don't exist, and gstack
+  // No legacy state on Windows — /tmp and `ps` don't exist, and gbrowse
   // never ran on Windows before the Node.js fallback was added.
   if (IS_WINDOWS) return;
 
@@ -447,7 +447,7 @@ async function ensureServer(flags?: GlobalFlags): Promise<ServerState> {
   // fail fast with a clear error instead of silently starting a new one.
   if (process.env.BROWSE_NO_AUTOSTART === '1') {
     console.error('[browse] Server not available and BROWSE_NO_AUTOSTART is set.');
-    console.error('[browse] The headed browser may have been closed. Run /open-gstack-browser to restart.');
+    console.error('[browse] The headed browser may have been closed. Run /open-browser to restart.');
     process.exit(1);
   }
 
@@ -456,7 +456,7 @@ async function ensureServer(flags?: GlobalFlags): Promise<ServerState> {
   // Silently replacing it would be confusing — tell the user to reconnect.
   if (state && state.mode === 'headed' && isProcessAlive(state.pid)) {
     console.error(`[browse] Headed server running (PID ${state.pid}) but not responding.`);
-    console.error(`[browse] Run '/open-gstack-browser' to restart.`);
+    console.error(`[browse] Run '/open-browser' to restart.`);
     process.exit(1);
   }
 
@@ -623,9 +623,9 @@ let _globalFlags: GlobalFlags | null = null;
 
 // ─── Ngrok Detection ───────────────────────────────────────────
 
-/** Check if ngrok is installed and authenticated (native config or gstack env). */
+/** Check if ngrok is installed and authenticated (native config or gbrowse env). */
 function isNgrokAvailable(): boolean {
-  // Check gstack's own ngrok env
+  // Check gbrowse's own ngrok env
   const ngrokEnvPath = path.join(process.env.GBROWSE_HOME || process.env.GSTACK_HOME || (process.env.HOME || '/tmp') + '/.gbrowse', 'ngrok.env');
   if (fs.existsSync(ngrokEnvPath)) return true;
 
@@ -998,7 +998,7 @@ async function main() {
   const args = globalFlags.args;
 
   if (args.length === 0 || args[0] === '--help' || args[0] === '-h') {
-    console.log(`gstack browse — Fast headless browser for AI coding agents
+    console.log(`gbrowse browse — Fast headless browser for AI coding agents
 
 Usage: browse <command> [args...]
 
@@ -1183,12 +1183,12 @@ Refs:           After 'snapshot', use @e1, @e2... as selectors:
     process.on('SIGTERM', () => teardownAndExit('SIGTERM'));
 
     const SUPERVISOR_TICK_MS = parseInt(
-      process.env.GSTACK_SUPERVISOR_TICK_MS || '30000',
+      (process.env.GBROWSE_SUPERVISOR_TICK_MS ?? process.env.GSTACK_SUPERVISOR_TICK_MS) || '30000',
       10,
     );
     const SUPERVISOR_GUARD_WINDOW_MS = 5 * 60_000;
     const SUPERVISOR_GUARD_MAX = 5;
-    const SUPERVISOR_BACKOFF_MS = (process.env.GSTACK_SUPERVISOR_BACKOFF || '1000,2000,4000,8000,30000')
+    const SUPERVISOR_BACKOFF_MS = ((process.env.GBROWSE_SUPERVISOR_BACKOFF ?? process.env.GSTACK_SUPERVISOR_BACKOFF) || '1000,2000,4000,8000,30000')
       .split(',').map(s => parseInt(s.trim(), 10)).filter(n => Number.isFinite(n));
     const respawns: number[] = [];
 
@@ -1322,7 +1322,7 @@ Refs:           After 'snapshot', use @e1, @e2... as selectors:
     // Ensure headed mode — the user should see the browser window
     // when sharing it with another agent. Feels safer, more impressive.
     if (state.mode !== 'headed' && !hasFlag(commandArgs, '--headless')) {
-      console.log('[browse] Opening GStack Browser so you can see what the remote agent does...');
+      console.log('[browse] Opening GBrowse Browser so you can see what the remote agent does...');
       // In compiled binaries, process.argv[1] is /$bunfs/... (virtual).
       // Use process.execPath which is the real binary on disk.
       const browseBin = process.execPath;
