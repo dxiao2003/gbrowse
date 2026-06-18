@@ -14,9 +14,11 @@ else
 fi
 ```
 
-If this is the first run, install dependencies:
+If dependencies aren't installed yet, install them (idempotent — safe to re-run):
 ```bash
-"$ROOT/scripts/install.sh"
+if [ ! -d "$ROOT/node_modules" ]; then
+  "$ROOT/scripts/install.sh"
+fi
 ```
 
 ## Launching headed Chromium
