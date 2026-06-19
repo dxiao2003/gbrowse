@@ -35,5 +35,9 @@ jobs:
       - name: Install Chromium
         run: bunx playwright install --with-deps chromium
 
+      # Headed-mode tests (handoff, xvfb) need a virtual X display and xdpyinfo.
+      - name: Install Xvfb and X utilities
+        run: sudo apt-get update && sudo apt-get install -y xvfb x11-utils
+
       - name: Run tests
-        run: bun test browse/test/
+        run: xvfb-run -a bun test browse/test/
