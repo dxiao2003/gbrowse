@@ -2,7 +2,6 @@
  * Adversarial security tests — XSS and boundary-check hardening
  *
  * Test 19: Sidepanel escapes entry.command in activity feed (prevents XSS)
- * Test 20: Freeze hook uses trailing slash in boundary check (prevents prefix collision)
  */
 
 import { describe, test, expect } from 'bun:test';
@@ -18,14 +17,5 @@ describe('Adversarial security', () => {
     // entry.command must be wrapped in escapeHtml() to prevent XSS injection
     // via crafted command names in the activity feed
     expect(source).toContain('escapeHtml(entry.command');
-  });
-
-  test.skip('freeze hook uses trailing slash in boundary check', () => {
-    // freeze/ is a gbrowse-only feature not present in gbrowse
-    const source = fs.readFileSync(
-      path.join(import.meta.dir, '../../freeze/bin/check-freeze.sh'),
-      'utf-8',
-    );
-    expect(source).toContain('"${FREEZE_DIR}/"');
   });
 });
