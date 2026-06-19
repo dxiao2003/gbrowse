@@ -54,7 +54,10 @@ if [ -f "$ROOT/package.json" ] && grep -q '"vendor:xterm"' "$ROOT/package.json";
   bun run vendor:xterm
 fi
 
+echo "gbrowse: building the browse binary..."
+"$SCRIPT_DIR/build.sh"
+
 echo "gbrowse: setup complete."
 echo ""
 echo "Run a quick smoke test:"
-echo "  bun run $ROOT/browse/src/cli.ts goto https://example.com && bun run $ROOT/browse/src/cli.ts text"
+echo "  $ROOT/browse/dist/browse goto https://example.com && $ROOT/browse/dist/browse text"
