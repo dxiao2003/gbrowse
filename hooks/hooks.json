@@ -1,8 +1,15 @@
 {
-  "hooks": [
-    {
-      "event": "SessionStart",
-      "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${GBROWSE_PLUGIN_ROOT:?set GBROWSE_PLUGIN_ROOT to the gbrowse plugin root}}\"; if ! ([ -d \"$ROOT/node_modules/playwright\" ] && [ -d \"$ROOT/node_modules/.bin\" ]); then echo \"[gbrowse] Dependencies not installed. Run: $ROOT/scripts/install.sh\"; fi'"
-    }
-  ]
+  "description": "Warn when gbrowse dependencies have not been installed.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'ROOT=\"$CLAUDE_PLUGIN_ROOT\"; if [ -z \"$ROOT\" ]; then ROOT=\"$GBROWSE_PLUGIN_ROOT\"; fi; if [ -z \"$ROOT\" ]; then echo \"[gbrowse] Plugin root not set. Set GBROWSE_PLUGIN_ROOT to the gbrowse plugin root.\"; exit 0; fi; if ! ([ -d \"$ROOT/node_modules/playwright\" ] && [ -d \"$ROOT/node_modules/.bin\" ]); then echo \"[gbrowse] Dependencies not installed. Run: $ROOT/scripts/install.sh\"; fi'"
+          }
+        ]
+      }
+    ]
+  }
 }
