@@ -51,5 +51,12 @@ jobs:
       - name: Install Xvfb and X utilities
         run: sudo apt-get update && sudo apt-get install -y xvfb x11-utils
 
+      # Use the project's test runner (scripts/test.sh), which runs each test
+      # file in its own bun process. The browser tests each launch a real
+      # Chromium; sharing a single bun process lets them starve each other and
+      # lets one file's stray teardown (e.g. a Chromium that's killed/OOMs
+      # mid-run) take the whole runner down — which showed up as flaky,
+      # unrelated test failures. Per-file isolation contains that. The script
+      # re-execs itself under a single xvfb-run, so no wrapper is needed here.
       - name: Run tests
-        run: xvfb-run -a bun test browse/test/
+        run: bun run test
