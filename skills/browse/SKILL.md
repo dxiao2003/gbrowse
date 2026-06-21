@@ -1,11 +1,19 @@
+---
+name: browse
+description: Drive the gbrowse headless browser for QA, web automation, screenshots, snapshots, and page inspection.
+---
+
 # browse
 
-Fast headless browser for QA, dogfooding, and web automation, driven by Claude.
+Fast headless browser for QA, dogfooding, and web automation.
 
 ## Setup
 
+For Codex, set `GBROWSE_PLUGIN_ROOT` to the installed gbrowse plugin directory.
+Claude Code sets `CLAUDE_PLUGIN_ROOT` automatically.
+
 ```bash
-ROOT="${CLAUDE_PLUGIN_ROOT:?}"
+ROOT="${CLAUDE_PLUGIN_ROOT:-${GBROWSE_PLUGIN_ROOT:?set GBROWSE_PLUGIN_ROOT to the gbrowse plugin root}}"
 if [ -x "$ROOT/browse/dist/browse" ]; then
   B="$ROOT/browse/dist/browse"
 else

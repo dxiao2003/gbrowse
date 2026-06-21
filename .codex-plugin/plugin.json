@@ -1,0 +1,40 @@
+{
+  "name": "gbrowse",
+  "version": "1.0.0",
+  "description": "Fast headless and headed browser automation for QA, dogfooding, and scraping from Codex.",
+  "author": {
+    "name": "gbrowse contributors",
+    "url": "https://github.com/dxiao2003/gbrowse"
+  },
+  "homepage": "https://github.com/dxiao2003/gbrowse",
+  "repository": "https://github.com/dxiao2003/gbrowse",
+  "license": "MIT",
+  "keywords": [
+    "browser",
+    "automation",
+    "playwright",
+    "headless",
+    "scraping",
+    "qa"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "gbrowse",
+    "shortDescription": "Drive a real browser from Codex",
+    "longDescription": "gbrowse gives Codex a real browser for QA, dogfooding, scraping, snapshots, screenshots, tabs, cookies, and headed Chromium sessions with a sidebar terminal.",
+    "developerName": "gbrowse contributors",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Use gbrowse to inspect this app in a browser.",
+      "Take browser screenshots and check the page behavior.",
+      "Scrape structured content from a web page."
+    ],
+    "brandColor": "#2563EB",
+    "screenshots": []
+  }
+}

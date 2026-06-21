@@ -2,7 +2,7 @@
   "hooks": [
     {
       "event": "SessionStart",
-      "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:?}\"; if ! ([ -d \"$ROOT/node_modules/playwright\" ] && [ -d \"$ROOT/node_modules/.bin\" ]); then echo \"[gbrowse] Dependencies not installed. Run: $ROOT/scripts/install.sh\"; fi'"
+      "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${GBROWSE_PLUGIN_ROOT:?set GBROWSE_PLUGIN_ROOT to the gbrowse plugin root}}\"; if ! ([ -d \"$ROOT/node_modules/playwright\" ] && [ -d \"$ROOT/node_modules/.bin\" ]); then echo \"[gbrowse] Dependencies not installed. Run: $ROOT/scripts/install.sh\"; fi'"
     }
   ]
 }

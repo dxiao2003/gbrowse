@@ -1,8 +1,8 @@
 # gbrowse
 
-Fast headless + headed browser for QA, dogfooding, and scraping — driven by Claude.
+Fast headless + headed browser for QA, dogfooding, and scraping.
 
-`gbrowse` is a [Claude Code](https://claude.com/claude-code) plugin that gives Claude a
+`gbrowse` is a Codex and [Claude Code](https://claude.com/claude-code) plugin that gives agents a
 real browser it can drive: navigate pages, read and diff snapshots, click and type,
 manage tabs and cookies, take screenshots, scrape structured data, and run an
 interactive agent session inside a headed Chromium sidebar.
@@ -12,7 +12,7 @@ interactive agent session inside a headed Chromium sidebar.
 `gbrowse` is extracted from **[gstack](https://github.com/garrytan/gstack)**, a larger agentic
 engineering toolkit. gstack's browser-automation capability was already cleanly
 separated from the rest of the system, so it was lifted into this standalone repo and
-repackaged as a self-contained Claude Code plugin.
+repackaged as a self-contained Codex and Claude Code plugin.
 
 Everything browser-related — the Playwright/CDP daemon, the snapshot/diff engine, the
 Chrome MV3 extension with its xterm terminal sidebar, the multi-layer prompt-injection
@@ -27,7 +27,7 @@ The plugin ships four skills:
 | Skill | What it does |
 |-------|--------------|
 | `browse` | Fast headless browser for QA, dogfooding, and web automation (~80 commands). |
-| `open-browser` | Launch a headed (visible) Chromium with the gbrowse sidebar extension and an interactive Claude terminal pane. |
+| `open-browser` | Launch a headed (visible) Chromium with the gbrowse sidebar extension and an interactive terminal pane. |
 | `scrape` | Read-only structured scraping: text, links, structured data, and screenshots — no interaction. |
 | `setup-browser-cookies` | Import cookies from your real browser (Chrome/Firefox/Safari) so the headless browser can reach sites you're logged into. |
 
@@ -44,7 +44,19 @@ The plugin ships four skills:
 
 ## Install
 
-### As a Claude Code plugin (recommended)
+### As a Codex plugin
+
+From Codex, add this repo as a plugin marketplace and install gbrowse:
+
+```bash
+codex plugin marketplace add dxiao2003/gbrowse
+codex plugin add gbrowse@gbrowse
+```
+
+The Codex plugin manifest lives at `.codex-plugin/plugin.json`, with marketplace
+metadata in `.agents/plugins/marketplace.json`.
+
+### As a Claude Code plugin
 
 From within Claude Code, add this repo as a plugin marketplace and install it:
 
@@ -75,7 +87,7 @@ cd gbrowse
 
 ## Usage
 
-Within Claude Code, just invoke the skills (e.g. ask Claude to browse, scrape, or open
+Within Codex or Claude Code, just invoke the skills (e.g. ask the agent to browse, scrape, or open
 a visible browser). Under the hood each skill drives the same CLI/daemon.
 
 Quick smoke test from the shell:
@@ -95,7 +107,7 @@ browse/src/      daemon + CLI: Playwright/CDP control, snapshot/diff, tabs, cook
 browse/test/     test suite (~100 tests) — the repo's CI
 extension/       Chrome MV3 extension: sidebar, xterm terminal, CSS inspector, @ref overlays
 browser-skills/  example deterministic Playwright "browser skill" (hackernews-frontpage)
-skills/          the four Claude Code SKILL.md docs
+skills/          the four plugin SKILL.md docs
 scripts/         install.sh (setup) and build.sh (compile binary)
 hooks/           SessionStart dependency-check hook
 ```

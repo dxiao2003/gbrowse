@@ -1,12 +1,20 @@
+---
+name: open-browser
+description: Launch headed Chromium with the gbrowse sidebar extension and connect browser automation commands to it.
+---
+
 # open-browser
 
 Launch a headed (visible) Chromium browser with the gbrowse sidebar extension pre-loaded.
-The sidebar provides a terminal pane running an interactive Claude agent session.
+The sidebar provides a terminal pane running an interactive agent session.
 
 ## Setup
 
+For Codex, set `GBROWSE_PLUGIN_ROOT` to the installed gbrowse plugin directory.
+Claude Code sets `CLAUDE_PLUGIN_ROOT` automatically.
+
 ```bash
-ROOT="${CLAUDE_PLUGIN_ROOT:?}"
+ROOT="${CLAUDE_PLUGIN_ROOT:-${GBROWSE_PLUGIN_ROOT:?set GBROWSE_PLUGIN_ROOT to the gbrowse plugin root}}"
 if [ -x "$ROOT/browse/dist/browse" ]; then
   B="$ROOT/browse/dist/browse"
 else
@@ -59,7 +67,7 @@ $B disconnect  # switch back to headless (extension detaches)
 ## The sidebar extension
 
 The Chrome extension (MV3) provides:
-- **Terminal pane**: interactive PTY for the Claude terminal agent
+- **Terminal pane**: interactive PTY for the terminal agent
 - **Inspector**: CSS element inspector with @ref overlay support
 - **Sidebar chat**: real-time agent interaction alongside the page
 

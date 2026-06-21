@@ -1,3 +1,8 @@
+---
+name: scrape
+description: Extract text, links, structured page data, screenshots, and PDFs with gbrowse read-only browser commands.
+---
+
 # scrape
 
 Read-only structured scraping: extract text, links, structured data, and screenshots
@@ -5,8 +10,11 @@ from web pages without user interaction.
 
 ## Setup
 
+For Codex, set `GBROWSE_PLUGIN_ROOT` to the installed gbrowse plugin directory.
+Claude Code sets `CLAUDE_PLUGIN_ROOT` automatically.
+
 ```bash
-ROOT="${CLAUDE_PLUGIN_ROOT:?}"
+ROOT="${CLAUDE_PLUGIN_ROOT:-${GBROWSE_PLUGIN_ROOT:?set GBROWSE_PLUGIN_ROOT to the gbrowse plugin root}}"
 if [ -x "$ROOT/browse/dist/browse" ]; then
   B="$ROOT/browse/dist/browse"
 else
