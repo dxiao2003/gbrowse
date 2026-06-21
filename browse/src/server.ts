@@ -1747,7 +1747,10 @@ export function buildFetchHandler(cfg: ServerConfig): ServerHandle {
           // SKILL_ROOT values containing '..' for the same defense-in-depth
           // reason as the GBROWSE_SLUG regex above.  Not exploitable today
           // (env set at install time), but the gate is one check.
-          const rawSkillRoot = process.env.CLAUDE_PLUGIN_ROOT || (process.env.GBROWSE_SKILL_ROOT ?? process.env.GSTACK_SKILL_ROOT) || `${homeDir}/.claude/skills/gbrowse`;
+          const rawSkillRoot = process.env.CLAUDE_PLUGIN_ROOT
+            || process.env.GBROWSE_PLUGIN_ROOT
+            || (process.env.GBROWSE_SKILL_ROOT ?? process.env.GSTACK_SKILL_ROOT)
+            || `${homeDir}/.claude/skills/gbrowse`;
           if (rawSkillRoot.includes('..')) return null;
           const builtinWelcome = `${rawSkillRoot}/browse/src/welcome.html`;
           if (fs.existsSync(builtinWelcome)) return builtinWelcome;
@@ -1766,7 +1769,7 @@ export function buildFetchHandler(cfg: ServerConfig): ServerHandle {
           `<!DOCTYPE html><html><head><title>GBrowse Browser</title>
           <style>body{background:#111;color:#fff;font-family:system-ui;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;}
           .msg{text-align:center;opacity:.7;}.gold{color:#f5a623;font-size:2em;margin-bottom:12px;}</style></head>
-          <body><div class="msg"><div class="gold">◈</div><p>GBrowse Browser ready.</p><p style="font-size:.85em">Waiting for commands from Claude Code.</p></div></body></html>`,
+          <body><div class="msg"><div class="gold">◈</div><p>GBrowse Browser ready.</p><p style="font-size:.85em">Waiting for browser commands.</p></div></body></html>`,
           { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8' } }
         );
       }

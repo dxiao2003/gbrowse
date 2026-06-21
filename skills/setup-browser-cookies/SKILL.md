@@ -1,3 +1,8 @@
+---
+name: setup-browser-cookies
+description: Import Chrome, Firefox, or Safari cookies into the gbrowse Chromium profile for authenticated browsing.
+---
+
 # setup-browser-cookies
 
 Import cookies from your real browser (Chrome, Firefox, Safari) into the gbrowse
@@ -5,8 +10,11 @@ Chromium profile so the headless browser can access sites you're already logged 
 
 ## Setup
 
+For Codex, set `GBROWSE_PLUGIN_ROOT` to the installed gbrowse plugin directory.
+Claude Code sets `CLAUDE_PLUGIN_ROOT` automatically.
+
 ```bash
-ROOT="${CLAUDE_PLUGIN_ROOT:?}"
+ROOT="${CLAUDE_PLUGIN_ROOT:-${GBROWSE_PLUGIN_ROOT:?set GBROWSE_PLUGIN_ROOT to the gbrowse plugin root}}"
 if [ -x "$ROOT/browse/dist/browse" ]; then
   B="$ROOT/browse/dist/browse"
 else
